@@ -1,0 +1,29 @@
+[
+  {
+    "enabled": true,
+    "operator": "GreaterThan",
+    "threshold": 50,
+    "contactEmails": ["seanconnel23@yahoo.com"],
+    "contactRoles": [],
+    "contactGroups": ["/subscriptions/1EB32A1D-22AD-4D63-956A-3454719749C4/resourceGroups/Sean-Cost-tracking-/providers/microsoft.insights/actionGroups/cost-alert-group-8fdc22"],
+    "thresholdType": "Actual"
+  },
+  {
+    "enabled": true,
+    "operator": "GreaterThan", 
+    "threshold": 80,
+    "contactEmails": ["seanconnel23@yahoo.com"],
+    "contactRoles": [],
+    "contactGroups": ["/subscriptions/1EB32A1D-22AD-4D63-956A-3454719749C4/resourceGroups/Sean-Cost-tracking-/providers/microsoft.insights/actionGroups/cost-alert-group-8fdc22"],
+    "thresholdType": "Actual"
+  },
+  {
+    "enabled": true,
+    "operator": "GreaterThan",
+    "threshold": 100,
+    "contactEmails": ["seanconnel23@yahoo.com"],
+    "contactRoles": [],
+    "contactGroups": ["/subscriptions/1EB32A1D-22AD-4D63-956A-3454719749C4/resourceGroups/Sean-Cost-tracking-/providers/microsoft.insights/actionGroups/cost-alert-group-8fdc22"],
+    "thresholdType": "Forecasted"
+  }
+]
