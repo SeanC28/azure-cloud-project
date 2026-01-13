@@ -18,7 +18,7 @@ def GetVisitorCount(req: func.HttpRequest) -> func.HttpResponse:
     try:
         # 2. Connect to Database
         client = CosmosClient.from_connection_string(connection_string)
-        database = client.get_database_client("ResumeDB")
+        database = client.get_database_client("ProjectDB")
         container = database.get_container_client("Counter")
 
         # 3. Read the Item (ID "1")
