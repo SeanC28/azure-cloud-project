@@ -1,0 +1,398 @@
+/* --- Global Variables & Reset --- */
+:root {
+    --bg-main: #0a0e17;    /* Very dark blue/black background */
+    --bg-secondary: #131a2a; /* Slightly lighter for sections */
+    --card-bg: #1a2235;      /* Card background */
+    --text-primary: #ffffff;
+    --text-secondary: #aeb4c3;
+    --accent-blue: #0078d4;  /* Main Azure blue */
+    --glow-blue: #00a2ff;    /* Brighter blue for glowing effects */
+    --section-spacing: 80px;
+}
+
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+html {
+    scroll-behavior: smooth;
+}
+
+body {
+    font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+    background-color: var(--bg-main);
+    color: var(--text-primary);
+    line-height: 1.6;
+    overflow-x: hidden;
+}
+
+/* --- Utility Classes --- */
+.container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 0 24px;
+}
+
+a {
+    text-decoration: none;
+    color: inherit;
+    transition: color 0.3s ease;
+}
+
+ul {
+    list-style: none;
+}
+
+/* --- Buttons --- */
+.btn {
+    display: inline-block;
+    padding: 12px 30px;
+    border-radius: 6px;
+    font-weight: 600;
+    transition: all 0.3s ease;
+    cursor: pointer;
+}
+
+.btn-primary {
+    background-color: var(--accent-blue);
+    color: white;
+    border: 2px solid var(--accent-blue);
+}
+.btn-primary:hover {
+    background-color: var(--glow-blue);
+    border-color: var(--glow-blue);
+    box-shadow: 0 0 15px rgba(0, 120, 212, 0.5);
+}
+
+.btn-outline {
+    background-color: transparent;
+    color: var(--text-primary);
+    border: 2px solid var(--accent-blue);
+    margin-left: 16px;
+}
+.btn-outline:hover {
+    background-color: rgba(0, 120, 212, 0.1);
+    box-shadow: 0 0 10px rgba(0, 120, 212, 0.3);
+}
+
+
+/* --- Glowing Effects --- */
+/* Subtle glow for general cards */
+.glow-box {
+    background-color: var(--card-bg);
+    border: 1px solid rgba(0, 120, 212, 0.3);
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+    transition: all 0.3s ease;
+}
+.glow-box:hover {
+    border-color: var(--glow-blue);
+    box-shadow: 0 0 15px rgba(0, 162, 255, 0.4), inset 0 0 10px rgba(0, 162, 255, 0.1);
+    transform: translateY(-3px);
+}
+
+/* Subtle glow for the project card */
+.glow-box-subtle {
+    background: linear-gradient(135deg, var(--card-bg) 0%, #1e2a45 100%);
+    border: 1px solid rgba(0, 120, 212, 0.5);
+    box-shadow: 0 0 20px rgba(0, 120, 212, 0.2);
+}
+
+/* Strong glow for the counter card */
+.glow-box-strong {
+    background-color: var(--card-bg);
+    border: 2px solid var(--accent-blue);
+    box-shadow: 0 0 25px rgba(0, 120, 212, 0.6), inset 0 0 15px rgba(0, 120, 212, 0.3);
+}
+
+
+/* ================= HEADER ================= */
+header {
+    padding: 20px 0;
+    position: sticky;
+    top: 0;
+    background-color: rgba(10, 14, 23, 0.95); /* Semi-transparent background */
+    backdrop-filter: blur(10px);
+    z-index: 100;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.header-content {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.logo {
+    font-size: 1.5rem;
+    font-weight: 700;
+}
+
+nav ul {
+    display: inline-flex;
+    margin-right: 24px;
+}
+
+nav ul li a {
+    margin: 0 16px;
+    color: var(--text-secondary);
+    font-weight: 500;
+}
+
+nav ul li a:hover {
+    color: var(--accent-blue);
+}
+
+/* ================= HERO SECTION ================= */
+.hero-section {
+    padding: 80px 0;
+    min-height: 80vh; /* Takes up most of the screen */
+    display: flex;
+    align-items: center;
+}
+
+.hero-layout {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 40px;
+}
+
+.hero-text {
+    flex: 1;
+    max-width: 600px;
+}
+
+.hero-text h1 {
+    font-size: 3.5rem;
+    line-height: 1.2;
+    margin-bottom: 24px;
+}
+
+.hero-text p {
+    font-size: 1.2rem;
+    color: var(--text-secondary);
+    margin-bottom: 40px;
+    max-width: 500px;
+}
+
+.hero-image {
+    flex: 1;
+    display: flex;
+    justify-content: center;
+}
+
+.hero-image img {
+    max-width: 100%;
+    height: auto;
+    /* Temporary drop shadow for placeholder image to pop */
+    filter: drop-shadow(0 0 20px rgba(0, 120, 212, 0.3));
+}
+
+/* ================= SKILLS & EXPERIENCE SECTION ================= */
+.skills-section {
+    padding: var(--section-spacing) 0;
+    background-color: var(--bg-secondary);
+}
+
+.section-title {
+    text-align: center;
+    font-size: 2.5rem;
+    margin-bottom: 60px;
+}
+
+.skills-layout {
+    display: flex;
+    align-items: flex-start; /* Align to top */
+    gap: 60px;
+}
+
+.skills-image {
+    flex: 1;
+}
+.skills-image img {
+    max-width: 100%;
+    height: auto;
+    filter: drop-shadow(0 0 20px rgba(0, 120, 212, 0.2));
+}
+
+.skills-content {
+    flex: 1.2; /* Slightly wider than the image side */
+}
+
+.skills-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 20px;
+    margin-bottom: 40px;
+}
+
+.skill-card {
+    padding: 20px;
+    text-align: center;
+    border-radius: 12px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+}
+
+.skill-icon {
+    font-size: 2.5rem;
+    margin-bottom: 10px;
+    color: var(--accent-blue);
+}
+
+.skill-card span {
+    font-weight: 600;
+    color: var(--text-primary);
+}
+
+.about-me h3 {
+    margin-bottom: 16px;
+    font-size: 1.5rem;
+}
+
+.about-me p {
+    color: var(--text-secondary);
+}
+
+/* ================= PROJECTS & COUNTER SECTION ================= */
+.projects-section {
+    padding: var(--section-spacing) 0;
+}
+
+.projects-layout {
+    display: flex;
+    gap: 30px;
+    align-items: stretch; /* Make cards same height */
+}
+
+/* Project Card Styles */
+.project-card {
+    flex: 2; /* Takes twice as much space as counter */
+    border-radius: 16px;
+    padding: 30px;
+    display: flex;
+    align-items: center;
+    gap: 30px;
+}
+
+.project-image img {
+    border-radius: 8px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+}
+
+.project-details h3 {
+    font-size: 1.8rem;
+    margin-bottom: 16px;
+}
+
+.project-details ul li {
+    margin-bottom: 8px;
+    color: var(--text-secondary);
+}
+
+.project-details strong {
+    color: var(--accent-blue);
+    margin-right: 8px;
+}
+
+/* Counter Card Styles */
+.counter-card {
+    flex: 1;
+    border-radius: 16px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 30px;
+    text-align: center;
+}
+
+.counter-card h3 {
+    font-size: 1.5rem;
+    font-weight: normal;
+}
+
+.counter-number {
+    display: inline-block;
+    background-color: var(--accent-blue);
+    padding: 5px 15px;
+    border-radius: 8px;
+    margin-left: 10px;
+    font-weight: bold;
+    font-size: 1.8rem;
+    color: white;
+    box-shadow: 0 0 15px var(--glow-blue);
+}
+
+/* ================= FOOTER ================= */
+footer {
+    padding: 40px 0;
+    text-align: center;
+    border-top: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.footer-content a {
+    margin: 0 15px;
+    font-size: 1.1rem;
+    color: var(--text-secondary);
+}
+
+.footer-content a strong {
+    color: var(--text-primary);
+}
+
+.footer-content a:hover {
+    color: var(--accent-blue);
+}
+
+/* ================= RESPONSIVE MEDIA QUERIES ================= */
+@media (max-width: 992px) {
+    /* Tablet / Smaller Laptops */
+    .hero-layout, 
+    .skills-layout, 
+    .projects-layout {
+        flex-direction: column;
+        text-align: center;
+    }
+
+    .hero-text, .skills-content {
+        max-width: 100%;
+    }
+
+    .hero-image, .skills-image {
+        margin-top: 40px;
+        order: 2; /* Put images below text on mobile */
+    }
+    .skills-layout .skills-image {
+        order: 0; /* Keep skills image above on tablet */
+    }
+
+    .project-card {
+        flex-direction: column;
+        text-align: left;
+    }
+}
+
+@media (max-width: 768px) {
+    /* Mobile Phones */
+    .hero-text h1 {
+        font-size: 2.5rem;
+    }
+    
+    .header-content {
+        flex-direction: column;
+        gap: 20px;
+    }
+    
+    nav ul {
+        margin-right: 0;
+        margin-bottom: 20px;
+    }
+
+    .skills-grid {
+        grid-template-columns: repeat(2, 1fr); /* 2 columns on mobile */
+    }
+}
