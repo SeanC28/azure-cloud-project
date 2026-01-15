@@ -4,12 +4,17 @@ This project is a serverless resume hosted on Azure. It demonstrates a full clou
 
 ## 🏗 Architecture
 
-```mermaid
 graph TD
     User(Visitor) -->|HTTPS Request| CDN[Azure Static Web App]
     CDN -->|Returns HTML/CSS/JS| User
-    User -->|JS Fetch Call| API[Azure Function API]
+    
+    %% Frontend Calls
+    User -->|Fetch: Visitor Count| API[Azure Function API]
+    User -->|Fetch: GitHub Stats| API
+    
+    %% Backend Logic
     API -->|Python SDK| DB[(Azure Cosmos DB)]
+    API -->|HTTP Request| ExtGit[GitHub Public API]
     
     subgraph Azure Cloud
         CDN
@@ -18,7 +23,7 @@ graph TD
     end
 
     subgraph "CI/CD Pipeline"
-        Git[GitHub Repo] -->|Push| Action[GitHub Actions]
+        Git[Your GitHub Repo] -->|Push| Action[GitHub Actions]
         Action -->|Build & Deploy| CDN
         Action -->|Build & Deploy| API
     end
