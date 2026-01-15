@@ -280,6 +280,8 @@ nav ul li a:hover {
 }
 
 .project-image img {
+    width: 120px;          
+    height: auto;          
     border-radius: 8px;
     box-shadow: 0 4px 12px rgba(0,0,0,0.3);
 }
