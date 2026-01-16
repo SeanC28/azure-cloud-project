@@ -252,9 +252,19 @@ def GetResumeStats(req: func.HttpRequest) -> func.HttpResponse:
         today_items = list(container.query_items(query=today_query, enable_cross_partition_query=True))
         downloads_today = today_items[0] if today_items else 0
         
-        # Get daily breakdown for last 7 days
-        daily_query = f"SELECT c.date, COUNT(1) as count FROM c WHERE c.type = 'resume_download' AND c.date >= '{seven_days_ago}' GROUP BY c.date"
-        daily_items = list(container.query_items(query=daily_query, enable_cross_partition_query=True))
+        # Get daily breakdown for last 7 days (manually count by date)
+        all_downloads_query = f"SELECT c.date FROM c WHERE c.type = 'resume_download' AND c.date >= '{seven_days_ago}'"
+        all_downloads = list(container.query_items(query=all_downloads_query, enable_cross_partition_query=True))
+        
+        # Count downloads per date
+        daily_counts = {}
+        for item in all_downloads:
+            date = item.get('date')
+            if date:
+                daily_counts[date] = daily_counts.get(date, 0) + 1
+        
+        # Format as list of objects
+        daily_items = [{"date": date, "count": count} for date, count in sorted(daily_counts.items())]
         
         return func.HttpResponse(
             json.dumps({
