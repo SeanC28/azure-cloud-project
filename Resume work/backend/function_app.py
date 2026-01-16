@@ -151,3 +151,145 @@ def GetGitHubStats(req: func.HttpRequest) -> func.HttpResponse:
             status_code=500,
             headers={'Content-Type': 'application/json'}
         )
+    
+    # Add this new function to your backend/function_app.py
+# Place it after your GetGitHubStats function
+
+@app.route(route="TrackResumeDownload", auth_level=func.AuthLevel.ANONYMOUS)
+def TrackResumeDownload(req: func.HttpRequest) -> func.HttpResponse:
+    logging.info('Resume download tracker triggered')
+    
+    # Get Connection String from Environment Variables
+    connection_string = os.environ.get("AzureCosmosDBConnectionString")
+    if not connection_string:
+        return func.HttpResponse(
+            json.dumps({"error": "Database connection string missing"}),
+            status_code=500,
+            headers={'Content-Type': 'application/json'}
+        )
+    
+    try:
+        # Connect to Database
+        client = CosmosClient.from_connection_string(connection_string)
+        database = client.get_database_client("ProjectDB")
+        
+        # Create container if it doesn't exist
+        try:
+            container = database.create_container_if_not_exists(
+                id="ResumeDownloads",
+                partition_key={"paths": ["/id"], "kind": "Hash"}
+            )
+        except:
+            container = database.get_container_client("ResumeDownloads")
+        
+        # Get current timestamp
+        timestamp = datetime.now().isoformat()
+        
+        # Create download record
+        download_record = {
+            "id": str(datetime.now().timestamp()).replace(".", ""),
+            "timestamp": timestamp,
+            "date": datetime.now().strftime("%Y-%m-%d"),
+            "type": "resume_download"
+        }
+        
+        # Store the download
+        container.create_item(download_record)
+        
+        # Get total download count
+        query = "SELECT VALUE COUNT(1) FROM c WHERE c.type = 'resume_download'"
+        items = list(container.query_items(query=query, enable_cross_partition_query=True))
+        total_downloads = items[0] if items else 0
+        
+        return func.HttpResponse(
+            json.dumps({
+                "success": True,
+                "total_downloads": total_downloads,
+                "timestamp": timestamp
+            }),
+            status_code=200,
+            headers={
+                'Content-Type': 'application/json',
+                'Access-Control-Allow-Origin': '*',
+                'Access-Control-Allow-Methods': 'GET, POST'
+            }
+        )
+        
+    except Exception as e:
+        logging.error(f'Error tracking download: {str(e)}')
+        return func.HttpResponse(
+            json.dumps({"error": "Failed to track download", "details": str(e)}),
+            status_code=500,
+            headers={'Content-Type': 'application/json'}
+        )
+
+
+@app.route(route="GetResumeStats", auth_level=func.AuthLevel.ANONYMOUS)
+def GetResumeStats(req: func.HttpRequest) -> func.HttpResponse:
+    logging.info('Resume stats request triggered')
+    
+    # Get Connection String from Environment Variables
+    connection_string = os.environ.get("AzureCosmosDBConnectionString")
+    if not connection_string:
+        return func.HttpResponse(
+            json.dumps({"error": "Database connection string missing"}),
+            status_code=500,
+            headers={'Content-Type': 'application/json'}
+        )
+    
+    try:
+        # Connect to Database
+        client = CosmosClient.from_connection_string(connection_string)
+        database = client.get_database_client("ProjectDB")
+        container = database.get_container_client("ResumeDownloads")
+        
+        # Get total downloads
+        total_query = "SELECT VALUE COUNT(1) FROM c WHERE c.type = 'resume_download'"
+        total_items = list(container.query_items(query=total_query, enable_cross_partition_query=True))
+        total_downloads = total_items[0] if total_items else 0
+        
+        # Get downloads in last 7 days
+        seven_days_ago = (datetime.now() - timedelta(days=7)).strftime("%Y-%m-%d")
+        week_query = f"SELECT VALUE COUNT(1) FROM c WHERE c.type = 'resume_download' AND c.date >= '{seven_days_ago}'"
+        week_items = list(container.query_items(query=week_query, enable_cross_partition_query=True))
+        downloads_this_week = week_items[0] if week_items else 0
+        
+        # Get downloads today
+        today = datetime.now().strftime("%Y-%m-%d")
+        today_query = f"SELECT VALUE COUNT(1) FROM c WHERE c.type = 'resume_download' AND c.date = '{today}'"
+        today_items = list(container.query_items(query=today_query, enable_cross_partition_query=True))
+        downloads_today = today_items[0] if today_items else 0
+        
+        # Get daily breakdown for last 7 days
+        daily_query = f"SELECT c.date, COUNT(1) as count FROM c WHERE c.type = 'resume_download' AND c.date >= '{seven_days_ago}' GROUP BY c.date"
+        daily_items = list(container.query_items(query=daily_query, enable_cross_partition_query=True))
+        
+        return func.HttpResponse(
+            json.dumps({
+                "total_downloads": total_downloads,
+                "downloads_today": downloads_today,
+                "downloads_this_week": downloads_this_week,
+                "daily_breakdown": daily_items,
+                "last_updated": datetime.now().isoformat()
+            }),
+            status_code=200,
+            headers={
+                'Content-Type': 'application/json',
+                'Access-Control-Allow-Origin': '*',
+                'Access-Control-Allow-Methods': 'GET'
+            }
+        )
+        
+    except Exception as e:
+        logging.error(f'Error getting resume stats: {str(e)}')
+        return func.HttpResponse(
+            json.dumps({
+                "total_downloads": 0,
+                "downloads_today": 0,
+                "downloads_this_week": 0,
+                "daily_breakdown": [],
+                "error": str(e)
+            }),
+            status_code=200,
+            headers={'Content-Type': 'application/json'}
+        )

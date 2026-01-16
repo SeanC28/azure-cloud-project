@@ -673,3 +673,68 @@ footer {
     from { opacity: 0; }
     to { opacity: 1; }
 }
+
+/* ================= RESUME DOWNLOAD TRACKER ================= */
+.download-stats {
+    margin-top: 20px;
+    padding-top: 20px;
+    border-top: 1px solid rgba(0, 120, 212, 0.3);
+}
+
+.download-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    background: linear-gradient(135deg, var(--accent-blue) 0%, #005a9e 100%);
+    color: white;
+    padding: 10px 20px;
+    border-radius: 8px;
+    font-weight: 600;
+    font-size: 1rem;
+    box-shadow: 0 0 15px rgba(0, 120, 212, 0.4);
+    border: 1px solid rgba(0, 162, 255, 0.3);
+    transition: all 0.3s ease;
+}
+
+.download-badge:hover {
+    box-shadow: 0 0 25px rgba(0, 162, 255, 0.6);
+    transform: translateY(-2px);
+}
+
+#download-count {
+    font-weight: bold;
+    font-size: 1.2em;
+    color: var(--glow-blue);
+    text-shadow: 0 0 10px rgba(0, 162, 255, 0.5);
+}
+.project-image a {
+    display: block;
+    position: relative;
+    cursor: pointer;
+}
+
+.project-image a::after {
+    content: '📥 Download Resume';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    background: rgba(0, 120, 212, 0.95);
+    color: white;
+    padding: 12px 24px;
+    border-radius: 8px;
+    font-weight: 600;
+    opacity: 0;
+    transition: opacity 0.3s ease;
+    pointer-events: none;
+    white-space: nowrap;
+}
+
+.project-image a:hover::after {
+    opacity: 1;
+}
+
+.project-image a:hover img {
+    filter: brightness(0.7);
+    transition: filter 0.3s ease;
+}
