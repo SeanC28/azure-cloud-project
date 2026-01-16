@@ -154,7 +154,7 @@ def GetGitHubStats(req: func.HttpRequest) -> func.HttpResponse:
 
 
 # ========== RESUME DOWNLOAD TRACKER ==========
-@app.route(route="TrackResumeDownload", auth_level=func.AuthLevel.ANONYMOUS)
+@app.route(route="TrackResumeDownload", auth_level=func.AuthLevel.ANONYMOUS, methods=["POST"])
 def TrackResumeDownload(req: func.HttpRequest) -> func.HttpResponse:
     logging.info('Resume download tracker triggered')
     
