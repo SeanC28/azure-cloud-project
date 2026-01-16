@@ -642,3 +642,34 @@ footer {
         font-size: 2.5em;
     }
 }
+
+/* --- Easter Egg Styles --- */
+.egg-overlay {
+    display: none; /* Hidden by default */
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.9); /* Dark background */
+    z-index: 9999; /* Sit on top of everything */
+    justify-content: center;
+    align-items: center;
+    flex-direction: column;
+    animation: fadeIn 0.5s;
+}
+
+.egg-overlay img {
+    width: 300px;
+    height: auto;
+    animation: spin 3s linear infinite; /* Makes it spin! */
+}
+
+@keyframes spin { 
+    100% { transform: rotate(360deg); } 
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+}

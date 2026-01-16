@@ -25,7 +25,7 @@
     <section class="hero-section">
         <div class="container hero-layout">
             <div class="hero-text">
-                <h1>Cloud & DevOps | <br>Programming & Automation | <br>More to come</h1>
+                <h1>Cloud & DevOps | <br>Programming & Automation</h1>
                 <p>Aspiring Cloud Engineer with a strong foundation in Azure infrastructure, Python automation, and CI/CD pipelines.</p>
                 <div class="hero-buttons">
                     <a href="#projects" class="btn btn-primary">View Projects</a>
@@ -67,7 +67,7 @@
                             <div class="skill-icon">🐳</div>
                             <span>Docker</span>
                         </div>
-                        <div class="skill-card glow-box">
+                        <div class="skill-card glow-box" id="linux-trigger" style="cursor: pointer; user-select: none;">
                             <div class="skill-icon">🐧</div>
                             <span>Linux</span>
                         </div>
@@ -91,7 +91,7 @@
                     </a>
                 </div>
                 <div class="project-details">
-                    <h3>Cloud Project</h3>
+                    <h3>Resume</h3>
                     <ul>
                         <li><strong>Tech:</strong> Azure Static Apps, Functions, CosmosDB</li>
                         <li><strong>CI/CD:</strong> GitHub Actions</li>
@@ -125,7 +125,6 @@
 
     <script>
         // VISITOR COUNTER LOGIC
-        // This connects to your Python Azure Function
         window.addEventListener('DOMContentLoaded', (event) => {
             getVisitCount();
         });
@@ -142,8 +141,49 @@
                 document.getElementById("counter").innerText = "Error";
             });
         }
+
+        // --- EASTER EGG LOGIC ---
+let linuxClicks = 0;
+const linuxTrigger = document.getElementById('linux-trigger');
+const linuxEgg = document.getElementById('linux-egg');
+
+if (linuxTrigger) {
+    linuxTrigger.addEventListener('click', () => {
+        linuxClicks++;
+        
+        // Console log so you can test it's counting
+        console.log(`Linux clicks: ${linuxClicks}`);
+
+        if (linuxClicks === 10) {
+            // 1. Show the overlay
+            linuxEgg.style.display = 'flex';
+            
+            // 2. Reset clicks so they can do it again
+            linuxClicks = 0;
+
+            // 3. Hide it automatically after 5 seconds (optional)
+            setTimeout(() => {
+                linuxEgg.style.display = 'none';
+            }, 5000);
+        }
+    });
+
+    // Allow clicking the overlay to close it immediately
+    linuxEgg.addEventListener('click', () => {
+        linuxEgg.style.display = 'none';
+    });
+}
     </script>
+
+    
     
     <script src="github-stats.js"></script>
+    
+   <div id="linux-egg" class="egg-overlay">
+    <img src="Images/Panda.png" alt="Spinning Panda">
+    
+    <h2 style="color: white; margin-top: 20px;">You found the Panda! 🐼</h2>
+</div>
+</div>
 </body>
 </html>
