@@ -147,8 +147,7 @@ nav ul li a:hover {
 /* ================= HERO SECTION ================= */
 .hero-section {
     padding: 80px 0;
-    min-height: 80vh; /* Takes up most of the screen */
-    display: flex;
+    min-height: 80vh; 
     align-items: center;
 }
 
@@ -186,7 +185,6 @@ nav ul li a:hover {
 .hero-image img {
     max-width: 100%;
     height: auto;
-    /* Temporary drop shadow for placeholder image to pop */
     filter: drop-shadow(0 0 20px rgba(0, 120, 212, 0.3));
 }
 
@@ -280,7 +278,7 @@ nav ul li a:hover {
 }
 
 .project-image img {
-    width: 120px;          
+    width: 160px;          
     height: auto;          
     border-radius: 8px;
     box-shadow: 0 4px 12px rgba(0,0,0,0.3);
