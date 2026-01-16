@@ -8,7 +8,7 @@ import requests
 
 app = func.FunctionApp()
 
-# ========== EXISTING VISITOR COUNTER (UNCHANGED) ==========
+# ========== VISITOR COUNTER ==========
 @app.route(route="GetVisitorCount", auth_level=func.AuthLevel.ANONYMOUS)
 def GetVisitorCount(req: func.HttpRequest) -> func.HttpResponse:
     logging.info('Python HTTP trigger function processed a request.')
@@ -45,7 +45,7 @@ def GetVisitorCount(req: func.HttpRequest) -> func.HttpResponse:
         return func.HttpResponse(f"Error accessing database: {str(e)}", status_code=500)
 
 
-# ========== NEW GITHUB STATS FUNCTION ==========
+# ========== GITHUB STATS ==========
 @app.route(route="GetGitHubStats", auth_level=func.AuthLevel.ANONYMOUS)
 def GetGitHubStats(req: func.HttpRequest) -> func.HttpResponse:
     logging.info('GitHub stats function triggered')
@@ -151,10 +151,9 @@ def GetGitHubStats(req: func.HttpRequest) -> func.HttpResponse:
             status_code=500,
             headers={'Content-Type': 'application/json'}
         )
-    
-    # Add this new function to your backend/function_app.py
-# Place it after your GetGitHubStats function
 
+
+# ========== RESUME DOWNLOAD TRACKER ==========
 @app.route(route="TrackResumeDownload", auth_level=func.AuthLevel.ANONYMOUS)
 def TrackResumeDownload(req: func.HttpRequest) -> func.HttpResponse:
     logging.info('Resume download tracker triggered')
@@ -169,18 +168,10 @@ def TrackResumeDownload(req: func.HttpRequest) -> func.HttpResponse:
         )
     
     try:
-        # Connect to Database
+        # Connect to Database (container already exists)
         client = CosmosClient.from_connection_string(connection_string)
         database = client.get_database_client("ProjectDB")
-        
-        # Create container if it doesn't exist
-        try:
-            container = database.create_container_if_not_exists(
-                id="ResumeDownloads",
-                partition_key={"paths": ["/id"], "kind": "Hash"}
-            )
-        except:
-            container = database.get_container_client("ResumeDownloads")
+        container = database.get_container_client("ResumeDownloads")
         
         # Get current timestamp
         timestamp = datetime.now().isoformat()
@@ -224,6 +215,7 @@ def TrackResumeDownload(req: func.HttpRequest) -> func.HttpResponse:
         )
 
 
+# ========== RESUME STATS ==========
 @app.route(route="GetResumeStats", auth_level=func.AuthLevel.ANONYMOUS)
 def GetResumeStats(req: func.HttpRequest) -> func.HttpResponse:
     logging.info('Resume stats request triggered')
