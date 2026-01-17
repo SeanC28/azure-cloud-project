@@ -32,17 +32,15 @@ async function loadGitHubStats() {
             </div>
             
             <div class="languages-section">
-                <h3>🚀 Top Programming Languages</h3>
+                <h3>🚀 Programming Languages</h3>
                 <div class="language-bars">
-                    ${data.top_languages.map(lang => {
-                        const maxCount = data.top_languages[0].count;
-                        const percentage = (lang.count / maxCount) * 100;
+                    ${data.languages.map(lang => {
                         return `
                             <div class="language-item">
                                 <div class="language-name">${lang.language}</div>
                                 <div class="language-bar">
-                                    <div class="language-fill" style="width: ${percentage}%">
-                                        ${lang.count} repos
+                                    <div class="language-fill" style="width: ${lang.percentage}%">
+                                        ${lang.percentage}%
                                     </div>
                                 </div>
                             </div>

@@ -85,15 +85,37 @@ def GetGitHubStats(req: func.HttpRequest) -> func.HttpResponse:
         total_stars = sum(repo['stargazers_count'] for repo in repos_data)
         total_forks = sum(repo['forks_count'] for repo in repos_data)
         
-        # Get languages
-        languages = {}
+        # Get languages with actual usage data (bytes of code)
+        language_bytes = {}
         for repo in repos_data:
-            if repo['language']:
-                languages[repo['language']] = languages.get(repo['language'], 0) + 1
+            if repo.get('language'):
+                # Fetch detailed language stats for this repo
+                try:
+                    lang_url = f"https://api.github.com/repos/{username}/{repo['name']}/languages"
+                    lang_response = requests.get(lang_url, headers=headers, timeout=5)
+                    if lang_response.status_code == 200:
+                        repo_languages = lang_response.json()
+                        for lang, bytes_count in repo_languages.items():
+                            language_bytes[lang] = language_bytes.get(lang, 0) + bytes_count
+                except:
+                    # If language stats fail, just skip this repo
+                    pass
         
-        # Sort languages by count
-        top_languages = sorted(languages.items(), key=lambda x: x[1], reverse=True)[:5]
+        # Calculate total bytes across all languages
+        total_bytes = sum(language_bytes.values())
         
+        # Calculate percentages and sort by usage
+        language_stats = []
+        if total_bytes > 0:
+            for lang, bytes_count in language_bytes.items():
+                percentage = (bytes_count / total_bytes) * 100
+                language_stats.append({
+                    'language': lang,
+                    'bytes': bytes_count,
+                    'percentage': round(percentage, 2)
+                })
+            # Sort by percentage (highest first)
+            language_stats = sorted(language_stats, key=lambda x: x['percentage'], reverse=True)
         # Get recent activity (last 30 days)
         thirty_days_ago = datetime.now() - timedelta(days=30)
         recent_repos = [
@@ -121,7 +143,7 @@ def GetGitHubStats(req: func.HttpRequest) -> func.HttpResponse:
             'following': user_data.get('following', 0),
             'total_stars': total_stars,
             'total_forks': total_forks,
-            'top_languages': [{'language': lang, 'count': count} for lang, count in top_languages],
+            'languages': language_stats,
             'recent_activity': recent_repos,
             'last_updated': datetime.now().isoformat()
         }
