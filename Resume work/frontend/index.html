@@ -16,7 +16,7 @@
                 <ul>
                     <li><a href="#projects">Projects</a></li>
                     <li><a href="#skills">Skills</a></li>
-                    <li><a href="#contact">Contact</a></li>
+                    <li><a href="#contact-form">Contact</a></li>
                 </ul>
                 <a href="#" class="btn btn-primary">Project Showcase</a>
             </nav>
@@ -30,7 +30,7 @@
                 <p>Aspiring Cloud Engineer with a strong foundation in Azure infrastructure, Python automation, and CI/CD pipelines.</p>
                 <div class="hero-buttons">
                     <a href="#projects" class="btn btn-primary">View Projects</a>
-                    <a href="#contact" class="btn btn-outline">Contact Me</a>
+                    <a href="#contact-form" class="btn btn-outline">Contact Me</a>
                 </div>
             </div>
             <div class="hero-image">
@@ -119,7 +119,89 @@
         </div>
     </section>
 
-    <footer id="contact">
+<section class="contact-section" id="contact-form">
+    <div class="container">
+        <h2 class="section-title">Get In Touch</h2>
+        <p class="contact-subtitle">Have a question or want to work together? Send me a message!</p>
+        
+        <div class="contact-layout">
+            <form id="contact-form" class="contact-form">
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="name">Name *</label>
+                        <input 
+                            type="text" 
+                            id="name" 
+                            name="name" 
+                            required 
+                            placeholder="Your name"
+                        >
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="email">Email *</label>
+                        <input 
+                            type="email" 
+                            id="email" 
+                            name="email" 
+                            required 
+                            placeholder="your.email@example.com"
+                        >
+                    </div>
+                </div>
+                
+                <div class="form-group">
+                    <label for="subject">Subject *</label>
+                    <input 
+                        type="text" 
+                        id="subject" 
+                        name="subject" 
+                        required 
+                        placeholder="What is this about?"
+                    >
+                </div>
+                
+                <div class="form-group">
+                    <label for="message">Message *</label>
+                    <textarea 
+                        id="message" 
+                        name="message" 
+                        required 
+                        rows="6" 
+                        placeholder="Your message here..."
+                    ></textarea>
+                </div>
+                
+                <button type="submit" class="btn btn-primary submit-btn">
+                    <span class="btn-text">Send Message</span>
+                    <span class="btn-loading" style="display: none;">Sending...</span>
+                </button>
+                
+                <div id="form-message" class="form-message" style="display: none;"></div>
+            </form>
+            
+            <div class="contact-info">
+                <div class="info-card glow-box">
+                    <div class="info-icon">📧</div>
+                    <h3>Email</h3>
+                    <p>seanconnell23@yahoo.com</p>
+                </div>
+                
+                <div class="info-card glow-box">
+                    <div class="info-icon">💼</div>
+                    <h3>LinkedIn</h3>
+                    <p><a href="https://www.linkedin.com/in/sean-connell-42947b214/" target="_blank">Connect with me</a></p>
+                </div>
+                
+                <div class="info-card glow-box">
+                    <div class="info-icon">💻</div>
+                    <h3>GitHub</h3>
+                    <p><a href="https://github.com/SeanC28" target="_blank">View my code</a></p>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
 
     <footer id="contact">
         <div class="container footer-content">
@@ -187,6 +269,7 @@
 
     <script src="github-stats.js"></script>
     <script src="resume-tracker.js"></script>
+    <script src="contact-form.js"></script>
 
 </body>
 </html>

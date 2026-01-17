@@ -295,3 +295,150 @@ def GetResumeStats(req: func.HttpRequest) -> func.HttpResponse:
             status_code=200,
             headers={'Content-Type': 'application/json'}
         )
+    
+# Contact Form
+
+@app.route(route="SubmitContactForm", auth_level=func.AuthLevel.ANONYMOUS, methods=["POST"])
+def SubmitContactForm(req: func.HttpRequest) -> func.HttpResponse:
+    logging.info('Contact form submission received')
+    
+    # Get Connection String and Resend API Key from Environment Variables
+    connection_string = os.environ.get("AzureCosmosDBConnectionString")
+    resend_api_key = os.environ.get("RESEND_API_KEY")
+    recipient_email = os.environ.get("CONTACT_EMAIL", "seanconnell23@yahoo.com")
+    
+    if not connection_string:
+        return func.HttpResponse(
+            json.dumps({"error": "Database connection string missing"}),
+            status_code=500,
+            headers={'Content-Type': 'application/json'}
+        )
+    
+    if not resend_api_key:
+        logging.warning('Resend API key missing - email notification will be skipped')
+    
+    try:
+        # Parse form data
+        req_body = req.get_json()
+        name = req_body.get('name', '').strip()
+        email = req_body.get('email', '').strip()
+        subject = req_body.get('subject', '').strip()
+        message = req_body.get('message', '').strip()
+        
+        # Validate required fields
+        if not all([name, email, subject, message]):
+            return func.HttpResponse(
+                json.dumps({"error": "All fields are required"}),
+                status_code=400,
+                headers={'Content-Type': 'application/json'}
+            )
+        
+        # Basic email validation
+        if '@' not in email or '.' not in email:
+            return func.HttpResponse(
+                json.dumps({"error": "Invalid email address"}),
+                status_code=400,
+                headers={'Content-Type': 'application/json'}
+            )
+        
+        # Connect to Database
+        client = CosmosClient.from_connection_string(connection_string)
+        database = client.get_database_client("ProjectDB")
+        
+        # Create ContactMessages container if it doesn't exist
+        try:
+            container = database.get_container_client("ContactMessages")
+            # Test if container exists
+            list(container.query_items(query="SELECT TOP 1 * FROM c", enable_cross_partition_query=True))
+        except:
+            # Container doesn't exist, create it
+            logging.info("Creating ContactMessages container")
+            container = database.create_container(
+                id="ContactMessages",
+                partition_key={"paths": ["/id"], "kind": "Hash"},
+                offer_throughput=400
+            )
+        
+        # Create message record
+        timestamp = datetime.now().isoformat()
+        message_record = {
+            "id": str(datetime.now().timestamp()).replace(".", ""),
+            "name": name,
+            "email": email,
+            "subject": subject,
+            "message": message,
+            "timestamp": timestamp,
+            "date": datetime.now().strftime("%Y-%m-%d"),
+            "status": "new",
+            "type": "contact_message"
+        }
+        
+        # Store in database
+        container.create_item(message_record)
+        logging.info(f"Message stored in database from {email}")
+        
+        # Send email notification via Resend
+        email_sent = False
+        if resend_api_key:
+            try:
+                import requests
+                
+                resend_url = "https://api.resend.com/emails"
+                headers = {
+                    "Authorization": f"Bearer {resend_api_key}",
+                    "Content-Type": "application/json"
+                }
+                
+                email_data = {
+                    "from": "Portfolio Contact <onboarding@resend.dev>",
+                    "to": [recipient_email],
+                    "subject": f"New Contact Form: {subject}",
+                    "html": f"""
+                    <h2>New Contact Form Submission</h2>
+                    <p><strong>From:</strong> {name}</p>
+                    <p><strong>Email:</strong> {email}</p>
+                    <p><strong>Subject:</strong> {subject}</p>
+                    <p><strong>Message:</strong></p>
+                    <p>{message.replace(chr(10), '<br>')}</p>
+                    <hr>
+                    <p><small>Received: {timestamp}</small></p>
+                    <p><small>Reply to: {email}</small></p>
+                    """
+                }
+                
+                response = requests.post(resend_url, headers=headers, json=email_data, timeout=10)
+                
+                if response.status_code in [200, 201]:
+                    email_sent = True
+                    logging.info(f"Email notification sent successfully to {recipient_email}")
+                else:
+                    logging.error(f"Resend API error: {response.status_code} - {response.text}")
+                    
+            except Exception as email_error:
+                logging.error(f"Error sending email: {str(email_error)}")
+        
+        return func.HttpResponse(
+            json.dumps({
+                "success": True,
+                "message": "Thank you for your message! I'll get back to you soon.",
+                "email_sent": email_sent
+            }),
+            status_code=200,
+            headers={
+                'Content-Type': 'application/json',
+                'Access-Control-Allow-Origin': '*',
+                'Access-Control-Allow-Methods': 'POST',
+                'Access-Control-Allow-Headers': 'Content-Type'
+            }
+        )
+        
+    except Exception as e:
+        logging.error(f'Error processing contact form: {str(e)}')
+        return func.HttpResponse(
+            json.dumps({
+                "error": "Failed to send message. Please try again later.",
+                "details": str(e)
+            }),
+            status_code=500,
+            headers={'Content-Type': 'application/json'}
+        )
