@@ -2,12 +2,13 @@
 // Handles form submission, validation, and user feedback
 
 document.addEventListener('DOMContentLoaded', function() {
-    const contactForm = document.getElementById('contact-form');
-    const submitBtn = contactForm.querySelector('.submit-btn');
+    const contactFormElement = document.getElementById('contact-form');
     const formMessage = document.getElementById('form-message');
     
-    if (contactForm) {
-        contactForm.addEventListener('submit', async function(e) {
+    if (contactFormElement) {
+        const submitBtn = contactFormElement.querySelector('.submit-btn');
+        
+        contactFormElement.addEventListener('submit', async function(e) {
             e.preventDefault();
             
             // Get form data
@@ -51,7 +52,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 if (response.ok && data.success) {
                     // Success
                     showMessage(data.message || 'Message sent successfully!', 'success');
-                    contactForm.reset();
+                    contactFormElement.reset();
                     
                     // Log if email was sent
                     if (data.email_sent) {
@@ -73,19 +74,19 @@ document.addEventListener('DOMContentLoaded', function() {
                 submitBtn.disabled = false;
             }
         });
-    }
-    
-    // Show message function
-    function showMessage(message, type) {
-        formMessage.textContent = message;
-        formMessage.className = `form-message ${type}`;
-        formMessage.style.display = 'block';
         
-        // Auto-hide success messages after 5 seconds
-        if (type === 'success') {
-            setTimeout(() => {
-                formMessage.style.display = 'none';
-            }, 5000);
+        // Show message function
+        function showMessage(message, type) {
+            formMessage.textContent = message;
+            formMessage.className = `form-message ${type}`;
+            formMessage.style.display = 'block';
+            
+            // Auto-hide success messages after 5 seconds
+            if (type === 'success') {
+                setTimeout(() => {
+                    formMessage.style.display = 'none';
+                }, 5000);
+            }
         }
     }
 });
