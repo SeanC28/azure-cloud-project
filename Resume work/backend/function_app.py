@@ -296,7 +296,7 @@ def GetResumeStats(req: func.HttpRequest) -> func.HttpResponse:
             headers={'Content-Type': 'application/json'}
         )
     
-# Contact Form
+# ========== Contact Form ==========
 
 @app.route(route="SubmitContactForm", auth_level=func.AuthLevel.ANONYMOUS, methods=["POST"])
 def SubmitContactForm(req: func.HttpRequest) -> func.HttpResponse:
@@ -351,12 +351,12 @@ def SubmitContactForm(req: func.HttpRequest) -> func.HttpResponse:
             # Test if container exists
             list(container.query_items(query="SELECT TOP 1 * FROM c", enable_cross_partition_query=True))
         except:
-            # Container doesn't exist, create it
+            # Container doesn't exist, create it (without throughput for serverless)
             logging.info("Creating ContactMessages container")
             container = database.create_container(
                 id="ContactMessages",
-                partition_key={"paths": ["/id"], "kind": "Hash"},
-                offer_throughput=400
+                partition_key={"paths": ["/id"], "kind": "Hash"}
+                # No offer_throughput for serverless accounts
             )
         
         # Create message record
