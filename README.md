@@ -1,6 +1,6 @@
 # Azure Cloud Resume Project
 
-This project is a serverless resume hosted on Azure. It demonstrates a full cloud-native CI/CD workflow using infrastructure as code, automated testing, and real-time API integrations.
+This a Cloud project hosted on Azure. It demonstrates a full cloud-native CI/CD workflow using infrastructure as code, automated testing, and real-time API integrations.
 
 ## 🏗 Architecture
 
