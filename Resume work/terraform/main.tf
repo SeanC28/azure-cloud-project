@@ -98,3 +98,12 @@ resource "azurerm_cosmosdb_sql_container" "contact_messages" {
     ]
   }
 }
+
+# Application Insights for monitoring
+resource "azurerm_application_insights" "portfolio" {
+  name                = "appi-portfolio-prod"
+  location            = azurerm_resource_group.portfolio.location
+  resource_group_name = azurerm_resource_group.portfolio.name
+  application_type    = "web"
+  tags                = var.tags
+}

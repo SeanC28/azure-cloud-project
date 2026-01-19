@@ -40,3 +40,16 @@ output "deployment_summary" {
     ]
   }
 }
+
+# Application Insights
+output "app_insights_instrumentation_key" {
+  description = "Application Insights instrumentation key"
+  value       = azurerm_application_insights.portfolio.instrumentation_key
+  sensitive   = true
+}
+
+output "app_insights_connection_string" {
+  description = "Application Insights connection string"
+  value       = azurerm_application_insights.portfolio.connection_string
+  sensitive   = true
+}
