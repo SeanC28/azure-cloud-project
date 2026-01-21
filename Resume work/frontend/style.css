@@ -921,54 +921,63 @@ footer {
     }
 }
 
-/* --- Waving Pixel Man Animation --- */
+/* --- Waving Pixel Man Animation (Fixed) --- */
 
-/* 1. The Card: Hides the man behind it */
+/* 1. The Wrapper: Just holds everything together */
 .counter-card {
     position: relative;
-    background-color: #0d1117; /* Matches site background */
+    /* No background color here! */
     z-index: 10;
 }
 
-/* 2. The Pixel Man Container: Handles the "Pop Up" movement */
+/* 2. The Visible Card Face: Sits ON TOP of the man */
+.card-face {
+    position: relative;
+    background-color: #0d1117; /* The dark background that hides the man */
+    z-index: 5; /* Higher than the man */
+    width: 100%;
+    height: 100%;
+    border-radius: inherit; /* Inherits rounded corners from glow-box */
+    /* Padding is usually handled by glow-box-strong, but ensure it looks right */
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+/* 3. The Pixel Man: Sits BEHIND the face but inside the wrapper */
 .pixelman-pop-up {
     position: absolute;
-    top: 5px;  /* Start hidden behind the card */
-    left: 50%; /* Center horizontally */
+    top: 0px;   /* Start tucked behind the card */
+    left: 50%;
     transform: translateX(-50%);
-    width: 80px; /* Adjust this to make him bigger/smaller */
-    z-index: -1; /* Send behind the card */
-    transition: top 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275); /* Bouncy movement */
+    width: 60px; /* Adjusted size for your sprite */
+    z-index: 1; /* Lower than card-face */
+    transition: top 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
 }
 
 .pixelman-pop-up img {
     width: 100%;
     height: auto;
-    transform-origin: bottom center; /* Wave from the waist */
+    transform-origin: bottom center;
 }
 
-/* 3. The Hover Trigger: Pops him up */
+/* 4. The Hover Trigger: Moves the man up */
 .counter-card:hover .pixelman-pop-up {
-    top: -75px; /* Adjust this number to control how high he stands up */
+    /* Adjust this value to control how much he pops out.
+       -45px is usually good for a "halfway" peek. */
+    top: -45px; 
 }
 
-/* 4. The Wave Animation: Triggers when hovered */
+/* 5. The Wave Animation */
 .counter-card:hover .pixelman-pop-up img {
     animation: pixelManWave 1s ease-in-out infinite;
     animation-delay: 0.3s;
 }
 
-/* The Keyframes for the Wave */
 @keyframes pixelManWave {
     0% { transform: rotate(0deg); }
     25% { transform: rotate(-15deg); }
     50% { transform: rotate(10deg); }
     75% { transform: rotate(-5deg); }
     100% { transform: rotate(0deg); }
-}
-
-/* Ensure the text stays on top */
-.counter-content {
-    position: relative;
-    z-index: 20;
 }
