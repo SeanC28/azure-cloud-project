@@ -921,62 +921,60 @@ footer {
     }
 }
 
-/* --- Waving Pixel Man Animation (Merged & Final) --- */
+/* --- Waving Pixel Man Animation (Size Fixed) --- */
 
-/* 1. The Wrapper: Holds the layout together */
+/* 1. The Wrapper: Reserves space for the pop-up */
 .counter-card {
     position: relative;
     z-index: 10;
-    /* Prevents layout shifts */
-    min-height: 120px; 
+    /* Keeps the layout stable */
+    min-height: 180px; 
 }
 
-/* 2. The Visible Card Face: The "Mask" */
+/* 2. The Visible Card Face: RESTORED HEIGHT */
 .card-face {
     position: relative;
-    background-color: #0d1117; /* Matches site background to hide the man */
-    z-index: 5; /* Sits ON TOP of the man */
+    background-color: #0d1117; 
+    z-index: 5;
     width: 100%;
-    height: 100%;
-    border-radius: inherit; /* Inherits rounded corners */
     
-    /* CRITICAL FIX: Restores the size/thickness of the box */
-    padding: 2rem 3rem; 
+    /* FIX: Force the box to be tall like the original */
+    min-height: 180px; 
+    padding: 2rem;
     
+    border-radius: inherit; 
     display: flex;
     justify-content: center;
     align-items: center;
 }
 
-/* 3. The Pixel Man: Sits BEHIND the face */
+/* 3. The Pixel Man: Positioned relative to the taller box */
 .pixelman-pop-up {
     position: absolute;
-    /* START: Tucked deep enough to be fully hidden */
-    top: 50px; 
+    /* START: Tucked deeper so he is fully hidden in the tall box */
+    top: 80px; 
     left: 50%;
     transform: translateX(-50%);
     
-    /* SIZE: Increased to 140px for better visibility */
+    /* SIZE: 140px looks good with this box size */
     width: 140px; 
     
-    z-index: 1; /* Sits BEHIND the card face */
+    z-index: 1; 
     transition: top 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-    
-    /* Keeps the pixel art sharp when resized */
     image-rendering: pixelated; 
-    pointer-events: none; /* Prevents him from blocking clicks */
+    pointer-events: none;
 }
 
 .pixelman-pop-up img {
     width: 100%;
     height: auto;
-    transform-origin: bottom center; /* Pivot point for the wave */
+    transform-origin: bottom center;
 }
 
-/* 4. The Hover Trigger: The "Peek" */
+/* 4. The Hover Trigger: Peeks over the tall wall */
 .counter-card:hover .pixelman-pop-up {
-    /* HEIGHT: Tuned to -60px so he peeks over the padded box perfectly */
-    top: -60px; 
+    /* HEIGHT: Tuned for the 180px box height */
+    top: -55px; 
 }
 
 /* 5. The Wave Animation */
@@ -987,8 +985,8 @@ footer {
 
 @keyframes pixelManWave {
     0% { transform: rotate(0deg); }
-    25% { transform: rotate(-10deg); } /* Gentle wave left */
-    50% { transform: rotate(5deg); }   /* Gentle wave right */
+    25% { transform: rotate(-10deg); }
+    50% { transform: rotate(5deg); }
     75% { transform: rotate(-5deg); }
     100% { transform: rotate(0deg); }
 }
