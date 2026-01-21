@@ -921,26 +921,31 @@ footer {
     }
 }
 
-/* --- Waving Pixel Man Animation (Size Fixed) --- */
+/* --- Waving Pixel Man Animation (Height Match Fix) --- */
 
-/* 1. The Wrapper: Reserves space for the pop-up */
+/* 1. The Wrapper: NOW SET TO FILL HEIGHT */
 .counter-card {
     position: relative;
     z-index: 10;
-    /* Keeps the layout stable */
-    min-height: 180px; 
+    
+    /* FIX: This makes it match the height of the left card automatically */
+    height: 100%; 
+    min-height: 200px; /* Safety fallback */
 }
 
-/* 2. The Visible Card Face: RESTORED HEIGHT */
+/* 2. The Visible Card Face: FILLS THE WRAPPER */
 .card-face {
     position: relative;
     background-color: #0d1117; 
     z-index: 5;
     width: 100%;
     
-    /* FIX: Force the box to be tall like the original */
-    min-height: 180px; 
+    /* FIX: Force it to fill the wrapper's full height */
+    height: 100%;
+    
+    /* Keeps the chunky look */
     padding: 2rem;
+    box-sizing: border-box; /* Ensures padding doesn't break dimensions */
     
     border-radius: inherit; 
     display: flex;
@@ -948,15 +953,15 @@ footer {
     align-items: center;
 }
 
-/* 3. The Pixel Man: Positioned relative to the taller box */
+/* 3. The Pixel Man: Hidden behind the wall */
 .pixelman-pop-up {
     position: absolute;
-    /* START: Tucked deeper so he is fully hidden in the tall box */
-    top: 80px; 
+    /* START: Tucked safely behind the visible card */
+    top: 50px; 
     left: 50%;
     transform: translateX(-50%);
     
-    /* SIZE: 140px looks good with this box size */
+    /* SIZE */
     width: 140px; 
     
     z-index: 1; 
@@ -971,10 +976,10 @@ footer {
     transform-origin: bottom center;
 }
 
-/* 4. The Hover Trigger: Peeks over the tall wall */
+/* 4. The Hover Trigger: Peeks over the wall */
 .counter-card:hover .pixelman-pop-up {
-    /* HEIGHT: Tuned for the 180px box height */
-    top: -55px; 
+    /* HEIGHT: Pops up just enough to wave */
+    top: -60px; 
 }
 
 /* 5. The Wave Animation */
