@@ -920,3 +920,55 @@ footer {
         padding: 25px;
     }
 }
+
+/* --- Waving Pixel Man Animation --- */
+
+/* 1. The Card: Hides the man behind it */
+.counter-card {
+    position: relative;
+    background-color: #0d1117; /* Matches site background */
+    z-index: 10;
+}
+
+/* 2. The Pixel Man Container: Handles the "Pop Up" movement */
+.pixelman-pop-up {
+    position: absolute;
+    top: 5px;  /* Start hidden behind the card */
+    left: 50%; /* Center horizontally */
+    transform: translateX(-50%);
+    width: 80px; /* Adjust this to make him bigger/smaller */
+    z-index: -1; /* Send behind the card */
+    transition: top 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275); /* Bouncy movement */
+}
+
+.pixelman-pop-up img {
+    width: 100%;
+    height: auto;
+    transform-origin: bottom center; /* Wave from the waist */
+}
+
+/* 3. The Hover Trigger: Pops him up */
+.counter-card:hover .pixelman-pop-up {
+    top: -75px; /* Adjust this number to control how high he stands up */
+}
+
+/* 4. The Wave Animation: Triggers when hovered */
+.counter-card:hover .pixelman-pop-up img {
+    animation: pixelManWave 1s ease-in-out infinite;
+    animation-delay: 0.3s;
+}
+
+/* The Keyframes for the Wave */
+@keyframes pixelManWave {
+    0% { transform: rotate(0deg); }
+    25% { transform: rotate(-15deg); }
+    50% { transform: rotate(10deg); }
+    75% { transform: rotate(-5deg); }
+    100% { transform: rotate(0deg); }
+}
+
+/* Ensure the text stays on top */
+.counter-content {
+    position: relative;
+    z-index: 20;
+}
