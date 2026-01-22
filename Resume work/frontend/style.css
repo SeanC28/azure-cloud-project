@@ -257,29 +257,38 @@ nav ul li a:hover {
 }
 
 /* ================= PROJECTS & COUNTER SECTION ================= */
+
+/* ================= PROJECTS & COUNTER SECTION (CENTERING FIX) ================= */
+
 .projects-section {
     padding: var(--section-spacing) 0;
 }
 
+/* 1. LAYOUT CONTAINER */
 .projects-layout {
-    display: flex;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
     gap: 30px;
-    align-items: stretch; /* Make cards same height */
+    align-items: stretch; /* Forces equal height */
+    max-width: 1000px;
+    margin: 0 auto;
 }
 
-/* Project Card Styles */
+/* 2. RESUME CARD */
 .project-card {
-    flex: 2; /* Takes twice as much space as counter */
+    width: 100%;
+    height: 100%;
     border-radius: 16px;
     padding: 30px;
     display: flex;
     align-items: center;
     gap: 30px;
+    box-sizing: border-box;
 }
 
 .project-image img {
-    width: 160px;          
-    height: auto;          
+    width: 140px;
+    height: auto;
     border-radius: 8px;
     box-shadow: 0 4px 12px rgba(0,0,0,0.3);
 }
@@ -299,32 +308,106 @@ nav ul li a:hover {
     margin-right: 8px;
 }
 
-/* Counter Card Styles */
+/* 3. VISITOR CARD WRAPPER */
 .counter-card {
-    flex: 1;
-    border-radius: 16px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    padding: 30px;
-    text-align: center;
+    position: relative;
+    width: 100%;
+    height: 100%;
+    min-height: 250px;
+    z-index: 10;
 }
 
+/* 4. VISITOR CARD FACE (The Centering Fix) */
+.card-face {
+    position: relative;
+    width: 100%;
+    height: 100%;
+    background-color: #0d1117;
+    z-index: 5;
+    
+    
+    display: flex;
+    flex-direction: column; 
+    justify-content: center; 
+    align-items: center;     
+    
+    border-radius: 16px;
+    padding: 20px;
+    box-sizing: border-box;
+}
+
+/* 5. TEXT & BADGE ALIGNMENT */
 .counter-card h3 {
+    margin: 0;
+    width: 100%;
+    
+    
+    display: flex;
+    flex-direction: row; 
+    align-items: center;
+    justify-content: center;
+    gap: 15px;
+    
     font-size: 1.5rem;
     font-weight: normal;
 }
 
 .counter-number {
-    display: inline-block;
     background-color: var(--accent-blue);
-    padding: 5px 15px;
+    padding: 8px 16px;
     border-radius: 8px;
-    margin-left: 10px;
     font-weight: bold;
     font-size: 1.8rem;
     color: white;
     box-shadow: 0 0 15px var(--glow-blue);
+    line-height: 1;
+}
+
+/* 6. PIXEL MAN ANIMATION */
+.pixelman-pop-up {
+    position: absolute;
+    top: 50px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 140px;
+    z-index: 1;
+    transition: top 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    image-rendering: pixelated;
+    pointer-events: none;
+}
+
+.pixelman-pop-up img {
+    width: 100%;
+    height: auto;
+    transform-origin: bottom center;
+}
+
+.counter-card:hover .pixelman-pop-up {
+    top: -60px;
+}
+
+.counter-card:hover .pixelman-pop-up img {
+    animation: pixelManWave 1s ease-in-out infinite;
+    animation-delay: 0.3s;
+}
+
+@keyframes pixelManWave {
+    0% { transform: rotate(0deg); }
+    25% { transform: rotate(-10deg); }
+    50% { transform: rotate(5deg); }
+    75% { transform: rotate(-5deg); }
+    100% { transform: rotate(0deg); }
+}
+
+/* MOBILE RESPONSIVE */
+@media (max-width: 992px) {
+    .projects-layout {
+        grid-template-columns: 1fr;
+    }
+    .project-card {
+        flex-direction: column;
+        text-align: center;
+    }
 }
 
 /* ================= FOOTER ================= */
@@ -352,8 +435,7 @@ footer {
 @media (max-width: 992px) {
     /* Tablet / Smaller Laptops */
     .hero-layout, 
-    .skills-layout, 
-    .projects-layout {
+    .skills-layout {
         flex-direction: column;
         text-align: center;
     }
@@ -368,11 +450,6 @@ footer {
     }
     .skills-layout .skills-image {
         order: 0; /* Keep skills image above on tablet */
-    }
-
-    .project-card {
-        flex-direction: column;
-        text-align: left;
     }
 }
 
@@ -737,8 +814,6 @@ footer {
     transition: filter 0.3s ease;
 }
 
-/* Add this to the end of your frontend/style.css */
-
 /* ================= CONTACT FORM SECTION ================= */
 .contact-section {
     padding: var(--section-spacing) 0;
@@ -919,79 +994,4 @@ footer {
     .contact-form {
         padding: 25px;
     }
-}
-
-/* --- Waving Pixel Man Animation (Height Match Fix) --- */
-
-/* 1. The Wrapper: NOW SET TO FILL HEIGHT */
-.counter-card {
-    position: relative;
-    z-index: 10;
-    
-    /* FIX: This makes it match the height of the left card automatically */
-    height: 100%; 
-    min-height: 200px; /* Safety fallback */
-}
-
-/* 2. The Visible Card Face: FILLS THE WRAPPER */
-.card-face {
-    position: relative;
-    background-color: #0d1117; 
-    z-index: 5;
-    width: 100%;
-    
-    /* FIX: Force it to fill the wrapper's full height */
-    height: 100%;
-    
-    /* Keeps the chunky look */
-    padding: 2rem;
-    box-sizing: border-box; /* Ensures padding doesn't break dimensions */
-    
-    border-radius: inherit; 
-    display: flex;
-    justify-content: center;
-    align-items: center;
-}
-
-/* 3. The Pixel Man: Hidden behind the wall */
-.pixelman-pop-up {
-    position: absolute;
-    /* START: Tucked safely behind the visible card */
-    top: 50px; 
-    left: 50%;
-    transform: translateX(-50%);
-    
-    /* SIZE */
-    width: 140px; 
-    
-    z-index: 1; 
-    transition: top 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-    image-rendering: pixelated; 
-    pointer-events: none;
-}
-
-.pixelman-pop-up img {
-    width: 100%;
-    height: auto;
-    transform-origin: bottom center;
-}
-
-/* 4. The Hover Trigger: Peeks over the wall */
-.counter-card:hover .pixelman-pop-up {
-    /* HEIGHT: Pops up just enough to wave */
-    top: -60px; 
-}
-
-/* 5. The Wave Animation */
-.counter-card:hover .pixelman-pop-up img {
-    animation: pixelManWave 1s ease-in-out infinite;
-    animation-delay: 0.3s;
-}
-
-@keyframes pixelManWave {
-    0% { transform: rotate(0deg); }
-    25% { transform: rotate(-10deg); }
-    50% { transform: rotate(5deg); }
-    75% { transform: rotate(-5deg); }
-    100% { transform: rotate(0deg); }
 }
