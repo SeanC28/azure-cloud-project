@@ -78,6 +78,10 @@ def GetGitHubStats(req: func.HttpRequest) -> func.HttpResponse:
         repos_response = requests.get(repos_url, headers=headers)
         repos_data = repos_response.json()
         
+        # Calculate total stars and forks across all repos
+        total_stars = sum(repo.get('stargazers_count', 0) for repo in repos_data)
+        total_forks = sum(repo.get('forks_count', 0) for repo in repos_data)
+        
         # Calculate weighted language statistics
         language_bytes = {}
         for repo in repos_data:
@@ -105,17 +109,20 @@ def GetGitHubStats(req: func.HttpRequest) -> func.HttpResponse:
             ]
             language_stats.sort(key=lambda x: x['percentage'], reverse=True)
         
-        # Get recent activity
-        events_url = f"https://api.github.com/users/{username}/events/public?per_page=5"
-        events_response = requests.get(events_url, headers=headers)
-        events_data = events_response.json()
+        # Get recent activity (last 5 repositories, sorted by last updated)
+        # Filter out forks and sort by recently updated
+        recent_repos = [repo for repo in repos_data if not repo.get('fork', False)]
+        recent_repos.sort(key=lambda x: x.get('updated_at', ''), reverse=True)
         
         recent_activity = []
-        for event in events_data[:5]:
+        for repo in recent_repos[:5]:
             activity = {
-                'type': event.get('type', 'Unknown'),
-                'repo': event.get('repo', {}).get('name', 'Unknown'),
-                'created_at': event.get('created_at', '')
+                'name': repo.get('name', 'Unknown'),
+                'url': repo.get('html_url', '#'),
+                'description': repo.get('description', 'No description available'),
+                'language': repo.get('language', None),
+                'stars': repo.get('stargazers_count', 0),
+                'updated': repo.get('updated_at', '')
             }
             recent_activity.append(activity)
         
@@ -124,6 +131,8 @@ def GetGitHubStats(req: func.HttpRequest) -> func.HttpResponse:
             'public_repos': user_data.get('public_repos', 0),
             'followers': user_data.get('followers', 0),
             'following': user_data.get('following', 0),
+            'total_stars': total_stars,
+            'total_forks': total_forks,
             'languages': language_stats,
             'recent_activity': recent_activity
         }
