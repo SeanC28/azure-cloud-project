@@ -5,3 +5,6 @@
 azure-functions
 azure-cosmos
 requests
+python-dotenv
+textblob==0.17.1
+nltk==3.8.1

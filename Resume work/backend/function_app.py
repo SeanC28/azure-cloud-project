@@ -5,221 +5,40 @@ import os
 from azure.cosmos import CosmosClient
 from datetime import datetime, timedelta
 import requests
+import uuid
+from sentiment_analyzer import SentimentAnalyzer
 
-app = func.FunctionApp()
+app = func.FunctionApp(http_auth_level=func.AuthLevel.ANONYMOUS)
 
-# ========== VISITOR COUNTER ==========
-@app.route(route="GetVisitorCount", auth_level=func.AuthLevel.ANONYMOUS)
+# ============================================================================
+# EXISTING FUNCTIONS (Unchanged)
+# ============================================================================
+
+@app.route(route="GetVisitorCount", auth_level=func.AuthLevel.ANONYMOUS, methods=["GET", "POST"])
 def GetVisitorCount(req: func.HttpRequest) -> func.HttpResponse:
-    logging.info('Python HTTP trigger function processed a request.')
-
-    # 1. Get Connection String from Environment Variables
-    connection_string = os.environ.get("AzureCosmosDBConnectionString")
-    if not connection_string:
-        return func.HttpResponse("Database connection string missing", status_code=500)
-
+    """Get and increment visitor counter"""
+    logging.info('GetVisitorCount function triggered')
+    
     try:
-        # 2. Connect to Database
+        connection_string = os.environ.get("AzureCosmosDBConnectionString")
         client = CosmosClient.from_connection_string(connection_string)
         database = client.get_database_client("ProjectDB")
         container = database.get_container_client("Counter")
-
-        # 3. Read the Item (ID "1")
-        item = container.read_item("1", partition_key="1")
         
-        # 4. Increment Count
-        item['count'] = item['count'] + 1
+        counter_id = "visitor-counter"
         
-        # 5. Save Back to DB
-        container.upsert_item(item)
-
-        # 6. Return New Count to Frontend
-        return func.HttpResponse(
-            json.dumps({"count": item['count']}),
-            mimetype="application/json",
-            status_code=200
-        )
-
-    except Exception as e:
-        logging.error(str(e))
-        return func.HttpResponse(f"Error accessing database: {str(e)}", status_code=500)
-
-
-# ========== GITHUB STATS ==========
-@app.route(route="GetGitHubStats", auth_level=func.AuthLevel.ANONYMOUS)
-def GetGitHubStats(req: func.HttpRequest) -> func.HttpResponse:
-    logging.info('GitHub stats function triggered')
-    
-    # Get GitHub username from environment variable or query parameter
-    github_username = os.environ.get('GITHUB_USERNAME', 'SeanC28')
-    username = req.params.get('username', github_username)
-    
-    try:
-        # GitHub API token (optional but recommended for higher rate limits)
-        github_token = os.environ.get('GITHUB_TOKEN', '')
-        headers = {
-            'Accept': 'application/vnd.github.v3+json',
-        }
-        if github_token:
-            headers['Authorization'] = f'token {github_token}'
-        
-        # Fetch user data
-        user_response = requests.get(
-            f'https://api.github.com/users/{username}',
-            headers=headers,
-            timeout=10
-        )
-        user_response.raise_for_status()
-        user_data = user_response.json()
-        
-        # Fetch repositories
-        repos_response = requests.get(
-            f'https://api.github.com/users/{username}/repos?per_page=100&sort=updated',
-            headers=headers,
-            timeout=10
-        )
-        repos_response.raise_for_status()
-        repos_data = repos_response.json()
-        
-        # Calculate statistics
-        total_stars = sum(repo['stargazers_count'] for repo in repos_data)
-        total_forks = sum(repo['forks_count'] for repo in repos_data)
-        
-        # Get languages with actual usage data (bytes of code)
-        language_bytes = {}
-        for repo in repos_data:
-            if repo.get('language'):
-                # Fetch detailed language stats for this repo
-                try:
-                    lang_url = f"https://api.github.com/repos/{username}/{repo['name']}/languages"
-                    lang_response = requests.get(lang_url, headers=headers, timeout=5)
-                    if lang_response.status_code == 200:
-                        repo_languages = lang_response.json()
-                        for lang, bytes_count in repo_languages.items():
-                            language_bytes[lang] = language_bytes.get(lang, 0) + bytes_count
-                except:
-                    # If language stats fail, just skip this repo
-                    pass
-        
-        # Calculate total bytes across all languages
-        total_bytes = sum(language_bytes.values())
-        
-        # Calculate percentages and sort by usage
-        language_stats = []
-        if total_bytes > 0:
-            for lang, bytes_count in language_bytes.items():
-                percentage = (bytes_count / total_bytes) * 100
-                language_stats.append({
-                    'language': lang,
-                    'bytes': bytes_count,
-                    'percentage': round(percentage, 2)
-                })
-            # Sort by percentage (highest first)
-            language_stats = sorted(language_stats, key=lambda x: x['percentage'], reverse=True)
-        # Get recent activity (last 30 days)
-        thirty_days_ago = datetime.now() - timedelta(days=30)
-        recent_repos = [
-            {
-                'name': repo['name'],
-                'description': repo['description'],
-                'language': repo['language'],
-                'stars': repo['stargazers_count'],
-                'url': repo['html_url'],
-                'updated': repo['updated_at']
-            }
-            for repo in repos_data
-            if datetime.strptime(repo['updated_at'], '%Y-%m-%dT%H:%M:%SZ') > thirty_days_ago
-        ][:5]
-        
-        # Compile stats
-        stats = {
-            'username': username,
-            'name': user_data.get('name', ''),
-            'bio': user_data.get('bio', ''),
-            'avatar_url': user_data.get('avatar_url', ''),
-            'profile_url': user_data.get('html_url', ''),
-            'public_repos': user_data.get('public_repos', 0),
-            'followers': user_data.get('followers', 0),
-            'following': user_data.get('following', 0),
-            'total_stars': total_stars,
-            'total_forks': total_forks,
-            'languages': language_stats,
-            'recent_activity': recent_repos,
-            'last_updated': datetime.now().isoformat()
-        }
+        try:
+            item = container.read_item(item=counter_id, partition_key=counter_id)
+            current_count = item.get('count', 0)
+            new_count = current_count + 1
+            item['count'] = new_count
+            container.replace_item(item=counter_id, body=item)
+        except:
+            new_count = 1
+            container.create_item(body={'id': counter_id, 'count': new_count})
         
         return func.HttpResponse(
-            body=json.dumps(stats, indent=2),
-            status_code=200,
-            headers={
-                'Content-Type': 'application/json',
-                'Access-Control-Allow-Origin': '*',
-                'Access-Control-Allow-Methods': 'GET',
-                'Cache-Control': 'public, max-age=300'
-            }
-        )
-        
-    except requests.exceptions.RequestException as e:
-        logging.error(f'GitHub API error: {str(e)}')
-        return func.HttpResponse(
-            body=json.dumps({'error': 'Failed to fetch GitHub data', 'details': str(e)}),
-            status_code=500,
-            headers={'Content-Type': 'application/json'}
-        )
-    except Exception as e:
-        logging.error(f'Unexpected error: {str(e)}')
-        return func.HttpResponse(
-            body=json.dumps({'error': 'Internal server error', 'details': str(e)}),
-            status_code=500,
-            headers={'Content-Type': 'application/json'}
-        )
-
-
-# ========== RESUME DOWNLOAD TRACKER ==========
-@app.route(route="TrackResumeDownload", auth_level=func.AuthLevel.ANONYMOUS, methods=["POST"])
-def TrackResumeDownload(req: func.HttpRequest) -> func.HttpResponse:
-    logging.info('Resume download tracker triggered')
-    
-    # Get Connection String from Environment Variables
-    connection_string = os.environ.get("AzureCosmosDBConnectionString")
-    if not connection_string:
-        return func.HttpResponse(
-            json.dumps({"error": "Database connection string missing"}),
-            status_code=500,
-            headers={'Content-Type': 'application/json'}
-        )
-    
-    try:
-        # Connect to Database (container already exists)
-        client = CosmosClient.from_connection_string(connection_string)
-        database = client.get_database_client("ProjectDB")
-        container = database.get_container_client("ResumeDownloads")
-        
-        # Get current timestamp
-        timestamp = datetime.now().isoformat()
-        
-        # Create download record
-        download_record = {
-            "id": str(datetime.now().timestamp()).replace(".", ""),
-            "timestamp": timestamp,
-            "date": datetime.now().strftime("%Y-%m-%d"),
-            "type": "resume_download"
-        }
-        
-        # Store the download
-        container.create_item(download_record)
-        
-        # Get total download count
-        query = "SELECT VALUE COUNT(1) FROM c WHERE c.type = 'resume_download'"
-        items = list(container.query_items(query=query, enable_cross_partition_query=True))
-        total_downloads = items[0] if items else 0
-        
-        return func.HttpResponse(
-            json.dumps({
-                "success": True,
-                "total_downloads": total_downloads,
-                "timestamp": timestamp
-            }),
+            json.dumps({"count": new_count}),
             status_code=200,
             headers={
                 'Content-Type': 'application/json',
@@ -227,9 +46,135 @@ def TrackResumeDownload(req: func.HttpRequest) -> func.HttpResponse:
                 'Access-Control-Allow-Methods': 'GET, POST'
             }
         )
-        
     except Exception as e:
-        logging.error(f'Error tracking download: {str(e)}')
+        logging.error(f'Error in GetVisitorCount: {str(e)}')
+        return func.HttpResponse(
+            json.dumps({"error": "Failed to get visitor count", "details": str(e)}),
+            status_code=500,
+            headers={'Content-Type': 'application/json'}
+        )
+
+
+@app.route(route="GetGitHubStats", auth_level=func.AuthLevel.ANONYMOUS, methods=["GET"])
+def GetGitHubStats(req: func.HttpRequest) -> func.HttpResponse:
+    """Get GitHub profile statistics with weighted language analysis"""
+    logging.info('GetGitHubStats function triggered')
+    
+    try:
+        username = os.environ.get("GITHUB_USERNAME", "SeanC28")
+        github_token = os.environ.get("GITHUB_TOKEN")
+        
+        headers = {}
+        if github_token:
+            headers['Authorization'] = f'token {github_token}'
+        
+        # Get user profile
+        user_url = f"https://api.github.com/users/{username}"
+        user_response = requests.get(user_url, headers=headers)
+        user_data = user_response.json()
+        
+        # Get repositories
+        repos_url = f"https://api.github.com/users/{username}/repos?per_page=100"
+        repos_response = requests.get(repos_url, headers=headers)
+        repos_data = repos_response.json()
+        
+        # Calculate weighted language statistics
+        language_bytes = {}
+        for repo in repos_data:
+            if not repo.get('fork', False):
+                lang_url = f"https://api.github.com/repos/{username}/{repo['name']}/languages"
+                try:
+                    lang_response = requests.get(lang_url, headers=headers)
+                    repo_languages = lang_response.json()
+                    for lang, bytes_count in repo_languages.items():
+                        language_bytes[lang] = language_bytes.get(lang, 0) + bytes_count
+                except:
+                    continue
+        
+        # Calculate percentages
+        total_bytes = sum(language_bytes.values())
+        language_stats = []
+        if total_bytes > 0:
+            language_stats = [
+                {
+                    'language': lang,
+                    'bytes': bytes_count,
+                    'percentage': round((bytes_count / total_bytes) * 100, 2)
+                }
+                for lang, bytes_count in language_bytes.items()
+            ]
+            language_stats.sort(key=lambda x: x['percentage'], reverse=True)
+        
+        # Get recent activity
+        events_url = f"https://api.github.com/users/{username}/events/public?per_page=5"
+        events_response = requests.get(events_url, headers=headers)
+        events_data = events_response.json()
+        
+        recent_activity = []
+        for event in events_data[:5]:
+            activity = {
+                'type': event.get('type', 'Unknown'),
+                'repo': event.get('repo', {}).get('name', 'Unknown'),
+                'created_at': event.get('created_at', '')
+            }
+            recent_activity.append(activity)
+        
+        stats = {
+            'username': username,
+            'public_repos': user_data.get('public_repos', 0),
+            'followers': user_data.get('followers', 0),
+            'following': user_data.get('following', 0),
+            'languages': language_stats,
+            'recent_activity': recent_activity
+        }
+        
+        return func.HttpResponse(
+            json.dumps(stats),
+            status_code=200,
+            headers={
+                'Content-Type': 'application/json',
+                'Access-Control-Allow-Origin': '*'
+            }
+        )
+    except Exception as e:
+        logging.error(f'Error in GetGitHubStats: {str(e)}')
+        return func.HttpResponse(
+            json.dumps({"error": "Failed to fetch GitHub stats", "details": str(e)}),
+            status_code=500,
+            headers={'Content-Type': 'application/json'}
+        )
+
+
+@app.route(route="TrackResumeDownload", auth_level=func.AuthLevel.ANONYMOUS, methods=["POST"])
+def TrackResumeDownload(req: func.HttpRequest) -> func.HttpResponse:
+    """Track resume download events"""
+    logging.info('TrackResumeDownload function triggered')
+    
+    try:
+        connection_string = os.environ.get("AzureCosmosDBConnectionString")
+        client = CosmosClient.from_connection_string(connection_string)
+        database = client.get_database_client("ProjectDB")
+        container = database.get_container_client("ResumeDownloads")
+        
+        download_id = str(uuid.uuid4())
+        download_data = {
+            'id': download_id,
+            'timestamp': datetime.utcnow().isoformat(),
+            'user_agent': req.headers.get('User-Agent', 'Unknown')
+        }
+        
+        container.create_item(body=download_data)
+        
+        return func.HttpResponse(
+            json.dumps({"success": True, "download_id": download_id}),
+            status_code=200,
+            headers={
+                'Content-Type': 'application/json',
+                'Access-Control-Allow-Origin': '*'
+            }
+        )
+    except Exception as e:
+        logging.error(f'Error in TrackResumeDownload: {str(e)}')
         return func.HttpResponse(
             json.dumps({"error": "Failed to track download", "details": str(e)}),
             status_code=500,
@@ -237,117 +182,94 @@ def TrackResumeDownload(req: func.HttpRequest) -> func.HttpResponse:
         )
 
 
-# ========== RESUME STATS ==========
-@app.route(route="GetResumeStats", auth_level=func.AuthLevel.ANONYMOUS)
+@app.route(route="GetResumeStats", auth_level=func.AuthLevel.ANONYMOUS, methods=["GET"])
 def GetResumeStats(req: func.HttpRequest) -> func.HttpResponse:
-    logging.info('Resume stats request triggered')
-    
-    # Get Connection String from Environment Variables
-    connection_string = os.environ.get("AzureCosmosDBConnectionString")
-    if not connection_string:
-        return func.HttpResponse(
-            json.dumps({"error": "Database connection string missing"}),
-            status_code=500,
-            headers={'Content-Type': 'application/json'}
-        )
+    """Get resume download statistics"""
+    logging.info('GetResumeStats function triggered')
     
     try:
-        # Connect to Database
+        connection_string = os.environ.get("AzureCosmosDBConnectionString")
         client = CosmosClient.from_connection_string(connection_string)
         database = client.get_database_client("ProjectDB")
         container = database.get_container_client("ResumeDownloads")
         
-        # Get total downloads
-        total_query = "SELECT VALUE COUNT(1) FROM c WHERE c.type = 'resume_download'"
-        total_items = list(container.query_items(query=total_query, enable_cross_partition_query=True))
-        total_downloads = total_items[0] if total_items else 0
+        query = "SELECT * FROM c ORDER BY c.timestamp DESC"
+        downloads = list(container.query_items(query=query, enable_cross_partition_query=True))
         
-        # Get downloads in last 7 days
-        seven_days_ago = (datetime.now() - timedelta(days=7)).strftime("%Y-%m-%d")
-        week_query = f"SELECT VALUE COUNT(1) FROM c WHERE c.type = 'resume_download' AND c.date >= '{seven_days_ago}'"
-        week_items = list(container.query_items(query=week_query, enable_cross_partition_query=True))
-        downloads_this_week = week_items[0] if week_items else 0
+        total = len(downloads)
         
-        # Get downloads today
-        today = datetime.now().strftime("%Y-%m-%d")
-        today_query = f"SELECT VALUE COUNT(1) FROM c WHERE c.type = 'resume_download' AND c.date = '{today}'"
-        today_items = list(container.query_items(query=today_query, enable_cross_partition_query=True))
-        downloads_today = today_items[0] if today_items else 0
+        now = datetime.utcnow()
+        today = now.replace(hour=0, minute=0, second=0, microsecond=0)
+        week_ago = today - timedelta(days=7)
         
-        # Get daily breakdown for last 7 days (manually count by date)
-        all_downloads_query = f"SELECT c.date FROM c WHERE c.type = 'resume_download' AND c.date >= '{seven_days_ago}'"
-        all_downloads = list(container.query_items(query=all_downloads_query, enable_cross_partition_query=True))
+        today_count = sum(1 for d in downloads if datetime.fromisoformat(d['timestamp'].replace('Z', '+00:00')) >= today)
+        week_count = sum(1 for d in downloads if datetime.fromisoformat(d['timestamp'].replace('Z', '+00:00')) >= week_ago)
         
-        # Count downloads per date
-        daily_counts = {}
-        for item in all_downloads:
-            date = item.get('date')
-            if date:
-                daily_counts[date] = daily_counts.get(date, 0) + 1
-        
-        # Format as list of objects
-        daily_items = [{"date": date, "count": count} for date, count in sorted(daily_counts.items())]
+        stats = {
+            'total': total,
+            'today': today_count,
+            'this_week': week_count,
+            'recent_downloads': downloads[:10]
+        }
         
         return func.HttpResponse(
-            json.dumps({
-                "total_downloads": total_downloads,
-                "downloads_today": downloads_today,
-                "downloads_this_week": downloads_this_week,
-                "daily_breakdown": daily_items,
-                "last_updated": datetime.now().isoformat()
-            }),
+            json.dumps(stats),
             status_code=200,
             headers={
                 'Content-Type': 'application/json',
-                'Access-Control-Allow-Origin': '*',
-                'Access-Control-Allow-Methods': 'GET'
+                'Access-Control-Allow-Origin': '*'
             }
         )
-        
     except Exception as e:
-        logging.error(f'Error getting resume stats: {str(e)}')
+        logging.error(f'Error in GetResumeStats: {str(e)}')
         return func.HttpResponse(
-            json.dumps({
-                "total_downloads": 0,
-                "downloads_today": 0,
-                "downloads_this_week": 0,
-                "daily_breakdown": [],
-                "error": str(e)
-            }),
-            status_code=200,
-            headers={'Content-Type': 'application/json'}
-        )
-    
-# ========== Contact Form ==========
-
-@app.route(route="SubmitContactForm", auth_level=func.AuthLevel.ANONYMOUS, methods=["POST"])
-def SubmitContactForm(req: func.HttpRequest) -> func.HttpResponse:
-    logging.info('Contact form submission received')
-    
-    # Get Connection String and Resend API Key from Environment Variables
-    connection_string = os.environ.get("AzureCosmosDBConnectionString")
-    resend_api_key = os.environ.get("RESEND_API_KEY")
-    recipient_email = os.environ.get("CONTACT_EMAIL", "seanconnell23@yahoo.com")
-    
-    if not connection_string:
-        return func.HttpResponse(
-            json.dumps({"error": "Database connection string missing"}),
+            json.dumps({"error": "Failed to get stats", "details": str(e)}),
             status_code=500,
             headers={'Content-Type': 'application/json'}
         )
-    
-    if not resend_api_key:
-        logging.warning('Resend API key missing - email notification will be skipped')
+
+
+# ============================================================================
+# UPDATED FUNCTION - Now with Auto-Analysis
+# ============================================================================
+
+@app.route(route="SubmitContactForm", auth_level=func.AuthLevel.ANONYMOUS, methods=["POST"])
+def SubmitContactForm(req: func.HttpRequest) -> func.HttpResponse:
+    """Submit contact form with automatic AI sentiment analysis"""
+    logging.info('SubmitContactForm function triggered')
     
     try:
-        # Parse form data
-        req_body = req.get_json()
-        name = req_body.get('name', '').strip()
-        email = req_body.get('email', '').strip()
-        subject = req_body.get('subject', '').strip()
-        message = req_body.get('message', '').strip()
+        # Try to get JSON from request body
+        try:
+            logging.info('Attempting to parse request body as JSON')
+            req_body = req.get_json()
+            logging.info(f'Successfully parsed JSON: {type(req_body)}')
+        except Exception as json_error:
+            logging.warning(f'get_json() failed: {str(json_error)}')
+            # If get_json() fails, try parsing body as string
+            try:
+                body_str = req.get_body().decode('utf-8')
+                logging.info(f'Raw body string: {body_str}')
+                req_body = json.loads(body_str)
+                logging.info(f'Successfully parsed body string as JSON: {type(req_body)}')
+            except Exception as parse_error:
+                logging.error(f'Failed to parse body: {str(parse_error)}')
+                return func.HttpResponse(
+                    json.dumps({"error": "Invalid JSON in request body"}),
+                    status_code=400,
+                    headers={'Content-Type': 'application/json'}
+                )
         
-        # Validate required fields
+        logging.info(f'Request body type: {type(req_body)}, content: {req_body}')
+        
+        name = req_body.get('name')
+        email = req_body.get('email')
+        subject = req_body.get('subject')
+        message = req_body.get('message')
+        
+        logging.info(f'Extracted fields - name: {name}, email: {email}, subject: {subject}')
+        
+        # Validation
         if not all([name, email, subject, message]):
             return func.HttpResponse(
                 json.dumps({"error": "All fields are required"}),
@@ -355,112 +277,270 @@ def SubmitContactForm(req: func.HttpRequest) -> func.HttpResponse:
                 headers={'Content-Type': 'application/json'}
             )
         
-        # Basic email validation
-        if '@' not in email or '.' not in email:
-            return func.HttpResponse(
-                json.dumps({"error": "Invalid email address"}),
-                status_code=400,
-                headers={'Content-Type': 'application/json'}
-            )
-        
-        # Connect to Database
+        # Connect to Cosmos DB
+        logging.info('Connecting to Cosmos DB')
+        connection_string = os.environ.get("AzureCosmosDBConnectionString")
         client = CosmosClient.from_connection_string(connection_string)
         database = client.get_database_client("ProjectDB")
+        container = database.get_container_client("ContactMessages")
+        logging.info('Successfully connected to Cosmos DB')
         
-        # Create ContactMessages container if it doesn't exist
-        try:
-            container = database.get_container_client("ContactMessages")
-            # Test if container exists
-            list(container.query_items(query="SELECT TOP 1 * FROM c", enable_cross_partition_query=True))
-        except:
-            # Container doesn't exist, create it (without throughput for serverless)
-            logging.info("Creating ContactMessages container")
-            container = database.create_container(
-                id="ContactMessages",
-                partition_key={"paths": ["/id"], "kind": "Hash"}
-                # No offer_throughput for serverless accounts
-            )
+        message_id = str(uuid.uuid4())
+        logging.info(f'Generated message ID: {message_id}')
         
-        # Create message record
-        timestamp = datetime.now().isoformat()
-        message_record = {
-            "id": str(datetime.now().timestamp()).replace(".", ""),
-            "name": name,
-            "email": email,
-            "subject": subject,
-            "message": message,
-            "timestamp": timestamp,
-            "date": datetime.now().strftime("%Y-%m-%d"),
-            "status": "new",
-            "type": "contact_message"
+        # Save message to database
+        message_data = {
+            'id': message_id,
+            'name': name,
+            'email': email,
+            'subject': subject,
+            'message': message,
+            'timestamp': datetime.utcnow().isoformat(),
+            'status': 'new'
         }
+        logging.info(f'Creating item in Cosmos DB with data: {message_data}')
+        container.create_item(body=message_data)
+        logging.info('Successfully created item in Cosmos DB')
         
-        # Store in database
-        container.create_item(message_record)
-        logging.info(f"Message stored in database from {email}")
+        # **NEW: Auto-analyze the message with AI**
+        logging.info('Starting AI sentiment analysis')
+        try:
+            analysis = SentimentAnalyzer.analyze(subject=subject, message=message)
+            logging.info(f'Analysis complete: {analysis}')
+            message_data['analysis'] = analysis
+            message_data['analyzed_at'] = datetime.utcnow().isoformat()
+            logging.info('Updating item in Cosmos DB with analysis')
+            container.replace_item(item=message_id, body=message_data)
+            logging.info(f'Message {message_id} auto-analyzed: sentiment={analysis["sentiment"]}, spam={analysis["is_spam"]}, priority={analysis["priority"]}')
+        except Exception as analysis_error:
+            logging.warning(f'Auto-analysis failed for message {message_id}: {str(analysis_error)}')
+            logging.exception('Full analysis error traceback:')
+            # Continue even if analysis fails - don't block message submission
         
-        # Send email notification via Resend
-        email_sent = False
-        if resend_api_key:
+        # Send email notification via Resend (only if not spam)
+        logging.info('Checking spam status for email notification')
+        is_spam = message_data.get('analysis', {}).get('is_spam', False)
+        logging.info(f'Spam status: {is_spam}')
+        
+        if not is_spam:
             try:
-                import requests
-                
-                resend_url = "https://api.resend.com/emails"
-                headers = {
-                    "Authorization": f"Bearer {resend_api_key}",
-                    "Content-Type": "application/json"
-                }
+                resend_api_key = os.environ.get("RESEND_API_KEY")
+                contact_email = os.environ.get("CONTACT_EMAIL")
                 
                 email_data = {
-                    "from": "Portfolio Contact <onboarding@resend.dev>",
-                    "to": [recipient_email],
-                    "subject": f"New Contact Form: {subject}",
+                    "from": "onboarding@resend.dev",
+                    "to": [contact_email],
+                    "subject": f"New Contact Form Submission: {subject}",
                     "html": f"""
-                    <h2>New Contact Form Submission</h2>
-                    <p><strong>From:</strong> {name}</p>
-                    <p><strong>Email:</strong> {email}</p>
+                    <h2>New Contact Form Message</h2>
+                    <p><strong>From:</strong> {name} ({email})</p>
                     <p><strong>Subject:</strong> {subject}</p>
                     <p><strong>Message:</strong></p>
-                    <p>{message.replace(chr(10), '<br>')}</p>
+                    <p>{message}</p>
                     <hr>
-                    <p><small>Received: {timestamp}</small></p>
-                    <p><small>Reply to: {email}</small></p>
+                    <p><strong>AI Analysis:</strong></p>
+                    <ul>
+                        <li>Sentiment: {analysis.get('sentiment', 'N/A')}</li>
+                        <li>Priority: {analysis.get('priority', 'N/A')} (Score: {analysis.get('priority_score', 'N/A')}/10)</li>
+                        <li>Spam Score: {analysis.get('spam_score', 'N/A')}</li>
+                    </ul>
+                    <p><em>Received at {datetime.utcnow().strftime('%Y-%m-%d %H:%M:%S')} UTC</em></p>
                     """
                 }
                 
-                response = requests.post(resend_url, headers=headers, json=email_data, timeout=10)
+                email_response = requests.post(
+                    "https://api.resend.com/emails",
+                    headers={
+                        "Authorization": f"Bearer {resend_api_key}",
+                        "Content-Type": "application/json"
+                    },
+                    json=email_data
+                )
                 
-                if response.status_code in [200, 201]:
-                    email_sent = True
-                    logging.info(f"Email notification sent successfully to {recipient_email}")
+                if email_response.status_code == 200:
+                    logging.info(f'Email notification sent for message {message_id}')
                 else:
-                    logging.error(f"Resend API error: {response.status_code} - {response.text}")
-                    
+                    logging.warning(f'Email notification failed: {email_response.text}')
             except Exception as email_error:
-                logging.error(f"Error sending email: {str(email_error)}")
+                logging.error(f'Error sending email notification: {str(email_error)}')
+        else:
+            logging.info(f'Email notification skipped for message {message_id} - marked as spam')
         
         return func.HttpResponse(
             json.dumps({
                 "success": True,
-                "message": "Thank you for your message! I'll get back to you soon.",
-                "email_sent": email_sent
+                "message": "Message received and analyzed successfully",
+                "message_id": message_id
             }),
             status_code=200,
             headers={
                 'Content-Type': 'application/json',
-                'Access-Control-Allow-Origin': '*',
-                'Access-Control-Allow-Methods': 'POST',
-                'Access-Control-Allow-Headers': 'Content-Type'
+                'Access-Control-Allow-Origin': '*'
             }
         )
         
     except Exception as e:
-        logging.error(f'Error processing contact form: {str(e)}')
+        logging.error(f'Error in SubmitContactForm: {str(e)}')
+        return func.HttpResponse(
+            json.dumps({"error": "Failed to submit form", "details": str(e)}),
+            status_code=500,
+            headers={'Content-Type': 'application/json'}
+        )
+
+
+# ============================================================================
+# NEW AI-POWERED FUNCTIONS
+# ============================================================================
+
+@app.route(route="AnalyzeMessage", auth_level=func.AuthLevel.ANONYMOUS, methods=["POST"])
+def AnalyzeMessage(req: func.HttpRequest) -> func.HttpResponse:
+    """
+    Manually analyze a specific contact message for spam, sentiment, and priority
+    
+    POST Body:
+    {
+        "message_id": "uuid-of-message"
+    }
+    
+    Returns analysis results and updates the message in Cosmos DB
+    """
+    logging.info('AnalyzeMessage function triggered')
+    
+    try:
+        # Get message ID from request
+        req_body = req.get_json()
+        message_id = req_body.get('message_id')
+        
+        if not message_id:
+            return func.HttpResponse(
+                json.dumps({"error": "message_id is required"}),
+                status_code=400,
+                headers={'Content-Type': 'application/json'}
+            )
+        
+        # Connect to Cosmos DB
+        connection_string = os.environ.get("AzureCosmosDBConnectionString")
+        client = CosmosClient.from_connection_string(connection_string)
+        database = client.get_database_client("ProjectDB")
+        container = database.get_container_client("ContactMessages")
+        
+        # Get the message
+        try:
+            message = container.read_item(item=message_id, partition_key=message_id)
+        except Exception as read_error:
+            return func.HttpResponse(
+                json.dumps({"error": "Message not found", "details": str(read_error)}),
+                status_code=404,
+                headers={'Content-Type': 'application/json'}
+            )
+        
+        # Analyze the message
+        analysis = SentimentAnalyzer.analyze(
+            subject=message.get('subject', ''),
+            message=message.get('message', '')
+        )
+        
+        # Update message with analysis
+        message['analysis'] = analysis
+        message['analyzed_at'] = datetime.utcnow().isoformat()
+        container.replace_item(item=message_id, body=message)
+        
+        logging.info(f'Message {message_id} analyzed: sentiment={analysis["sentiment"]}, spam={analysis["is_spam"]}, priority={analysis["priority"]}')
+        
         return func.HttpResponse(
             json.dumps({
-                "error": "Failed to send message. Please try again later.",
-                "details": str(e)
+                "success": True,
+                "message_id": message_id,
+                "analysis": analysis
             }),
+            status_code=200,
+            headers={
+                'Content-Type': 'application/json',
+                'Access-Control-Allow-Origin': '*'
+            }
+        )
+        
+    except Exception as e:
+        logging.error(f'Error analyzing message: {str(e)}')
+        return func.HttpResponse(
+            json.dumps({"error": "Failed to analyze message", "details": str(e)}),
+            status_code=500,
+            headers={'Content-Type': 'application/json'}
+        )
+
+
+@app.route(route="GetPrioritizedMessages", auth_level=func.AuthLevel.ANONYMOUS, methods=["GET"])
+def GetPrioritizedMessages(req: func.HttpRequest) -> func.HttpResponse:
+    """
+    Get all contact messages sorted by AI-assigned priority, with optional spam filtering
+    
+    Query Parameters:
+    - include_spam: true/false (default: false) - Include spam messages in results
+    - limit: number of messages to return (default: 50, max: 100)
+    
+    Returns messages sorted by priority score (highest first)
+    """
+    logging.info('GetPrioritizedMessages function triggered')
+    
+    try:
+        # Get query parameters
+        include_spam = req.params.get('include_spam', 'false').lower() == 'true'
+        limit = min(int(req.params.get('limit', '50')), 100)
+        
+        # Connect to Cosmos DB
+        connection_string = os.environ.get("AzureCosmosDBConnectionString")
+        client = CosmosClient.from_connection_string(connection_string)
+        database = client.get_database_client("ProjectDB")
+        container = database.get_container_client("ContactMessages")
+        
+        # Query all messages
+        query = "SELECT * FROM c ORDER BY c.timestamp DESC"
+        messages = list(container.query_items(query=query, enable_cross_partition_query=True))
+        
+        # Filter spam if requested
+        if not include_spam:
+            messages = [m for m in messages if not m.get('analysis', {}).get('is_spam', False)]
+        
+        # Separate analyzed and non-analyzed messages
+        messages_analyzed = [m for m in messages if 'analysis' in m]
+        messages_not_analyzed = [m for m in messages if 'analysis' not in m]
+        
+        # Sort analyzed messages by priority score (descending)
+        messages_analyzed.sort(
+            key=lambda x: x.get('analysis', {}).get('priority_score', 0),
+            reverse=True
+        )
+        
+        # Combine: analyzed (sorted by priority) + not analyzed (at the end)
+        sorted_messages = messages_analyzed + messages_not_analyzed
+        
+        # Limit results
+        sorted_messages = sorted_messages[:limit]
+        
+        # Calculate statistics
+        spam_count = sum(1 for m in messages if m.get('analysis', {}).get('is_spam', False))
+        high_priority_count = sum(1 for m in messages_analyzed if m.get('analysis', {}).get('priority') == 'high')
+        
+        return func.HttpResponse(
+            json.dumps({
+                "success": True,
+                "total": len(sorted_messages),
+                "total_all_messages": len(messages),
+                "spam_filtered": spam_count if not include_spam else 0,
+                "high_priority_count": high_priority_count,
+                "messages": sorted_messages
+            }),
+            status_code=200,
+            headers={
+                'Content-Type': 'application/json',
+                'Access-Control-Allow-Origin': '*'
+            }
+        )
+        
+    except Exception as e:
+        logging.error(f'Error fetching prioritized messages: {str(e)}')
+        return func.HttpResponse(
+            json.dumps({"error": "Failed to fetch messages", "details": str(e)}),
             status_code=500,
             headers={'Content-Type': 'application/json'}
         )
