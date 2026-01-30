@@ -3,7 +3,7 @@ async function loadResumeStats() {
         const response = await fetch('/api/GetResumeStats');
         const data = await response.json();
         
-        document.getElementById('download-count').textContent = data.total_downloads;
+        document.getElementById('download-count').textContent = data.total;
     } catch (error) {
         console.error('Error loading resume stats:', error);
         document.getElementById('download-count').textContent = '0';
