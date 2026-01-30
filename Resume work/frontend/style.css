@@ -433,7 +433,8 @@ nav ul li a:hover {
     left: 50%;
     transform: translateX(-50%);
     width: 140px;
-    z-index: 1;
+    z-index: 1; 
+    opacity: 1;  
     transition: top 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
     image-rendering: pixelated;
     pointer-events: none;
@@ -649,4 +650,20 @@ footer {
     .header-content { flex-direction: column; gap: 20px; }
     .form-row { grid-template-columns: 1fr; }
     .skills-grid { grid-template-columns: repeat(2, 1fr); }
+}
+
+/* Fix for the GitHub Stats Layout */
+#stats-container {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 25px;
+    width: 100%;
+    margin-top: 30px;
+}
+
+.loading {
+    grid-column: 1 / -1;
+    text-align: center;
+    color: var(--text-secondary);
+    padding: 40px;
 }

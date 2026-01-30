@@ -220,24 +220,6 @@
     </div>
 
     <script>
-        // VISITOR COUNTER LOGIC
-        window.addEventListener('DOMContentLoaded', (event) => {
-            getVisitCount();
-        });
-
-        const getVisitCount = () => {
-            fetch('/api/GetVisitorCount')
-            .then(response => response.json())
-            .then(response => {
-                console.log("Visitor count fetched successfully.");
-                // Updates the number inside the glowing box
-                document.getElementById("counter").innerText = response.count;
-            }).catch(function(error){
-                console.log(error);
-                document.getElementById("counter").innerText = "Error";
-            });
-        }
-
         // EASTER EGG LOGIC
         let linuxClicks = 0;
         const linuxTrigger = document.getElementById('linux-trigger');
