@@ -257,5 +257,12 @@
     <script src="resume-tracker.js"></script>
     <script src="contact-form.js"></script>
     <script src="animation.js"></script>
+    <script>
+    window.addEventListener('DOMContentLoaded', () => {
+        if (typeof getVisitCount === 'function') {
+            getVisitCount();
+        }
+    });
+</script>
 </body>
 </html>
