@@ -107,3 +107,45 @@ resource "azurerm_application_insights" "portfolio" {
   application_type    = "web"
   tags                = var.tags
 }
+
+# Random string for unique ACR name
+resource "random_string" "acr_suffix" {
+  length  = 6
+  special = false
+  upper   = false
+  numeric  = true
+}
+
+# Azure Container Registry
+resource "azurerm_container_registry" "portfolio" {
+  name                = "portfolioacr${random_string.acr_suffix.result}"
+  resource_group_name = azurerm_resource_group.portfolio.name
+  location            = azurerm_resource_group.portfolio.location
+  sku                 = "Basic"
+  admin_enabled       = true
+  
+  tags = var.tags
+}
+
+# Outputs for ACR credentials
+output "acr_name" {
+  value       = azurerm_container_registry.portfolio.name
+  description = "Azure Container Registry name"
+}
+
+output "acr_login_server" {
+  value       = azurerm_container_registry.portfolio.login_server
+  description = "ACR login server URL"
+}
+
+output "acr_admin_username" {
+  value       = azurerm_container_registry.portfolio.admin_username
+  description = "ACR admin username"
+  sensitive   = true
+}
+
+output "acr_admin_password" {
+  value       = azurerm_container_registry.portfolio.admin_password
+  description = "ACR admin password"
+  sensitive   = true
+}

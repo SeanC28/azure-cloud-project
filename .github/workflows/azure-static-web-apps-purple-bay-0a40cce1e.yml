@@ -10,6 +10,35 @@ on:
       - main
 
 jobs:
+  # Job 1: Build and push Docker image to ACR
+  build_and_push_docker:
+    if: github.event_name == 'push' || (github.event_name == 'pull_request' && github.event.action != 'closed')
+    runs-on: ubuntu-latest
+    name: Build and Push Docker Image
+    steps:
+      - uses: actions/checkout@v3
+        with:
+          submodules: true
+          lfs: false
+
+      - name: Log in to Azure Container Registry
+        uses: docker/login-action@v2
+        with:
+          registry: ${{ secrets.ACR_LOGIN_SERVER }}
+          username: ${{ secrets.ACR_USERNAME }}
+          password: ${{ secrets.ACR_PASSWORD }}
+
+      - name: Build and push Docker image
+        uses: docker/build-push-action@v4
+        with:
+          context: ./backend
+          file: ./backend/Dockerfile
+          push: true
+          tags: |
+            ${{ secrets.ACR_LOGIN_SERVER }}/portfolio-functions:latest
+            ${{ secrets.ACR_LOGIN_SERVER }}/portfolio-functions:${{ github.sha }}
+
+  # Job 2: Deploy Static Web App (existing)
   build_and_deploy_job:
     if: github.event_name == 'push' || (github.event_name == 'pull_request' && github.event.action != 'closed')
     runs-on: ubuntu-latest
@@ -19,6 +48,7 @@ jobs:
         with:
           submodules: true
           lfs: false
+      
       - name: Build And Deploy
         id: builddeploy
         uses: Azure/static-web-apps-deploy@v1
@@ -26,8 +56,8 @@ jobs:
           azure_static_web_apps_api_token: ${{ secrets.AZURE_STATIC_WEB_APPS_API_TOKEN_PURPLE_BAY_0A40CCE1E }}
           repo_token: ${{ secrets.GITHUB_TOKEN }}
           action: "upload"
-          app_location: "/Resume work/frontend"
-          api_location: "/Resume work/backend"
+          app_location: "/frontend"
+          api_location: "/backend"
           output_location: ""
 
   close_pull_request_job:
@@ -41,4 +71,3 @@ jobs:
         with:
           azure_static_web_apps_api_token: ${{ secrets.AZURE_STATIC_WEB_APPS_API_TOKEN_PURPLE_BAY_0A40CCE1E }}
           action: "close"
-          app_location: "frontend"
