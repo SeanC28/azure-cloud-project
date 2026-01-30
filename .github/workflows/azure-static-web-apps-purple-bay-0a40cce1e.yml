@@ -31,8 +31,8 @@ jobs:
       - name: Build and push Docker image
         uses: docker/build-push-action@v4
         with:
-          context: ./backend
-          file: ./backend/Dockerfile
+          context: "Resume work/backend"
+          file: "Resume work/backend/Dockerfile"
           push: true
           tags: |
             ${{ secrets.ACR_LOGIN_SERVER }}/portfolio-functions:latest
@@ -56,8 +56,8 @@ jobs:
           azure_static_web_apps_api_token: ${{ secrets.AZURE_STATIC_WEB_APPS_API_TOKEN_PURPLE_BAY_0A40CCE1E }}
           repo_token: ${{ secrets.GITHUB_TOKEN }}
           action: "upload"
-          app_location: "/frontend"
-          api_location: "/backend"
+          app_location: "/Resume work/frontend"
+          api_location: "/Resume work/backend"
           output_location: ""
 
   close_pull_request_job:
@@ -71,3 +71,4 @@ jobs:
         with:
           azure_static_web_apps_api_token: ${{ secrets.AZURE_STATIC_WEB_APPS_API_TOKEN_PURPLE_BAY_0A40CCE1E }}
           action: "close"
+          app_location: "frontend"
