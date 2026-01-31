@@ -258,7 +258,9 @@ function initScrollAnimations() {
     });
 
     // Languages section: only add .revealed (no scroll-animate on parent)
-    // so the child .language-item stagger rules can fire independently
+    // so the child .language-item stagger rules can fire independently.
+    // Note: .languages-section is injected dynamically by github-stats.js,
+    // so it may not exist yet — the MutationObserver below handles that case.
     const languagesSection = document.querySelector('.languages-section');
     if (languagesSection) {
         scrollObserver.observe(languagesSection);
@@ -270,6 +272,68 @@ if (document.readyState === 'loading') {
     document.addEventListener('DOMContentLoaded', initScrollAnimations);
 } else {
     initScrollAnimations();
+}
+
+//===============================================
+// DYNAMIC ELEMENT OBSERVER
+// github-stats.js injects .languages-section and
+// .recent-activity after the page loads.  This
+// MutationObserver watches #stats-container and
+// hands any new elements to the scroll observer
+// as soon as they appear.
+//===============================================
+const dynamicRoot = document.querySelector('#stats-container');
+if (dynamicRoot) {
+    const dynamicObserver = new MutationObserver((mutations) => {
+        mutations.forEach((mutation) => {
+            mutation.addedNodes.forEach((node) => {
+                if (node.nodeType !== Node.ELEMENT_NODE) return;
+
+                // .languages-section: observe for .revealed only (no scroll-animate)
+                const langSection = node.classList && node.classList.contains('languages-section')
+                    ? node
+                    : node.querySelector && node.querySelector('.languages-section');
+                if (langSection && !langSection.dataset.observed) {
+                    langSection.dataset.observed = 'true';
+                    scrollObserver.observe(langSection);
+                }
+
+                // .recent-activity + .repo-item: full scroll-animate treatment
+                const recentActivity = node.classList && node.classList.contains('recent-activity')
+                    ? node
+                    : node.querySelector && node.querySelector('.recent-activity');
+                if (recentActivity && !recentActivity.dataset.observed) {
+                    recentActivity.dataset.observed = 'true';
+                    recentActivity.classList.add('scroll-animate');
+                    scrollObserver.observe(recentActivity);
+                }
+
+                // Individual repo items inside recent-activity
+                const repoItems = node.querySelectorAll ? node.querySelectorAll('.repo-item') : [];
+                repoItems.forEach((item, i) => {
+                    if (!item.dataset.observed) {
+                        item.dataset.observed = 'true';
+                        item.classList.add('scroll-animate');
+                        item.style.transitionDelay = `${i * 0.1}s`;
+                        scrollObserver.observe(item);
+                    }
+                });
+
+                // Stat cards
+                const statCards = node.querySelectorAll ? node.querySelectorAll('.stat-card') : [];
+                statCards.forEach((card, i) => {
+                    if (!card.dataset.observed) {
+                        card.dataset.observed = 'true';
+                        card.classList.add('scroll-animate');
+                        card.style.transitionDelay = `${i * 0.1}s`;
+                        scrollObserver.observe(card);
+                    }
+                });
+            });
+        });
+    });
+
+    dynamicObserver.observe(dynamicRoot, { childList: true, subtree: true });
 }
 
 //===============================================
