@@ -230,7 +230,7 @@ const scrollObserver = new IntersectionObserver((entries) => {
 function initScrollAnimations() {
     // Select all elements to animate
     const animatedElements = document.querySelectorAll(
-        '.skill-card, .project-card, .counter-card, .stat-card, .repo-item, .info-card, .about-me, .github-stats-section h2, .languages-section, .recent-activity'
+        '.skill-card, .project-card, .counter-card, .stat-card, .repo-item, .info-card, .about-me, .github-stats-section h2, .recent-activity'
     );
     
     // Add 'scroll-animate' class and observe each element
@@ -256,6 +256,13 @@ function initScrollAnimations() {
     skillCards.forEach((card, index) => {
         card.style.transitionDelay = `${index * 0.1}s`;
     });
+
+    // Languages section: only add .revealed (no scroll-animate on parent)
+    // so the child .language-item stagger rules can fire independently
+    const languagesSection = document.querySelector('.languages-section');
+    if (languagesSection) {
+        scrollObserver.observe(languagesSection);
+    }
 }
 
 // Call initialization after DOM is fully loaded
