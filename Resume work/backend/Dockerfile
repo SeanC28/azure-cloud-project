@@ -20,6 +20,9 @@ COPY requirements.txt .
 # Install Python dependencies
 RUN pip install --no-cache-dir -r requirements.txt
 
+# Install Azure Functions Core Tools
+RUN pip install azure-functions-core-tools
+
 # Download TextBlob corpora (needed for sentiment analysis)
 RUN python -m textblob.download_corpora
 
@@ -33,9 +36,5 @@ ENV AzureWebJobsScriptRoot=/home/site/wwwroot \
 # Expose port 80 (Azure Functions default)
 EXPOSE 80
 
-# Health check (optional but good practice)
-HEALTHCHECK --interval=30s --timeout=3s --start-period=5s --retries=3 \
-    CMD python -c "import sys; sys.exit(0)"
-
-# Start Azure Functions runtime
-CMD ["python", "-m", "azure.functions.worker"]
+# Start Azure Functions host on port 80
+CMD ["func", "start", "--port", "80"]
