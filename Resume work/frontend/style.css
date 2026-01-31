@@ -1,12 +1,12 @@
 /* --- Global Variables & Reset --- */
 :root {
-    --bg-main: #0a0e17;    /* Very dark blue/black background */
-    --bg-secondary: #131a2a; /* Slightly lighter for sections */
-    --card-bg: #1a2235;      /* Card background */
+    --bg-main: #0a0e17;    
+    --bg-secondary: #131a2a;
+    --card-bg: #1a2235;      
     --text-primary: #ffffff;
     --text-secondary: #aeb4c3;
-    --accent-blue: #0078d4;  /* Main Azure blue */
-    --glow-blue: #00a2ff;    /* Brighter blue for glowing effects */
+    --accent-blue: #0078d4;  
+    --glow-blue: #00a2ff;    
     --section-spacing: 80px;
 }
 
@@ -112,7 +112,7 @@ header {
     padding: 20px 0;
     position: sticky;
     top: 0;
-    background-color: rgba(10, 14, 23, 0.95); /* Semi-transparent background */
+    background-color: rgba(10, 14, 23, 0.95); 
     backdrop-filter: blur(10px);
     z-index: 100;
     border-bottom: 1px solid rgba(255, 255, 255, 0.1);
@@ -383,7 +383,21 @@ nav ul li a:hover {
     top: -60px;
 }
 
+.backflip {
+    animation: backflipAnim 0.8s cubic-bezier(0.45, 0.05, 0.55, 0.95);
+}
 
+@keyframes backflipAnim {
+    0% {
+        transform: rotate(0deg) translateY(0);
+    }
+    30% {
+        transform: rotate(-20deg) translateY(10px); /* Crouch anticipation */
+    }
+    100% {
+        transform: rotate(-360deg) translateY(0); /* Full flip */
+    }
+}
 /* MOBILE RESPONSIVE */
 @media (max-width: 992px) {
     .projects-layout {
@@ -418,7 +432,7 @@ footer {
 
 /* ================= RESPONSIVE MEDIA QUERIES ================= */
 @media (max-width: 992px) {
-    /* Tablet / Smaller Laptops */
+
     .hero-layout, 
     .skills-layout {
         flex-direction: column;
@@ -431,15 +445,15 @@ footer {
 
     .hero-image, .skills-image {
         margin-top: 40px;
-        order: 2; /* Put images below text on mobile */
+        order: 2; 
     }
     .skills-layout .skills-image {
-        order: 0; /* Keep skills image above on tablet */
+        order: 0; 
     }
 }
 
 @media (max-width: 768px) {
-    /* Mobile Phones */
+
     .hero-text h1 {
         font-size: 2.5rem;
     }
@@ -455,7 +469,7 @@ footer {
     }
 
     .skills-grid {
-        grid-template-columns: repeat(2, 1fr); /* 2 columns on mobile */
+        grid-template-columns: repeat(2, 1fr); 
     }
 }
 
@@ -705,14 +719,14 @@ footer {
 
 /* --- Easter Egg Styles --- */
 .egg-overlay {
-    display: none; /* Hidden by default */
+    display: none; 
     position: fixed;
     top: 0;
     left: 0;
     width: 100%;
     height: 100%;
-    background-color: rgba(0, 0, 0, 0.9); /* Dark background */
-    z-index: 9999; /* Sit on top of everything */
+    background-color: rgba(0, 0, 0, 0.9); 
+    z-index: 9999;
     justify-content: center;
     align-items: center;
     flex-direction: column;
@@ -722,7 +736,7 @@ footer {
 .egg-overlay img {
     width: 300px;
     height: auto;
-    animation: spin 3s linear infinite; /* Makes it spin! */
+    animation: spin 3s linear infinite; 
 }
 
 @keyframes spin { 
@@ -745,27 +759,27 @@ footer {
     display: inline-flex;
     align-items: center;
     gap: 8px;
-    background: linear-gradient(135deg, var(--accent-blue) 0%, #005a9e 100%);
-    color: white;
-    padding: 10px 20px;
-    border-radius: 8px;
-    font-weight: 600;
-    font-size: 1rem;
-    box-shadow: 0 0 15px rgba(0, 120, 212, 0.4);
-    border: 1px solid rgba(0, 162, 255, 0.3);
+    background: rgba(79, 70, 229, 0.15);
+    border: 1px solid rgba(79, 70, 229, 0.3);
+    border-radius: 20px;
+    padding: 8px 16px;
+    font-size: 0.9rem;
+    color: #a5b4fc;
+    white-space: nowrap;
     transition: all 0.3s ease;
 }
 
 .download-badge:hover {
-    box-shadow: 0 0 25px rgba(0, 162, 255, 0.6);
+    background: rgba(79, 70, 229, 0.25);
+    border-color: rgba(79, 70, 229, 0.5);
     transform: translateY(-2px);
 }
 
 #download-count {
-    font-weight: bold;
-    font-size: 1.2em;
-    color: var(--glow-blue);
-    text-shadow: 0 0 10px rgba(0, 162, 255, 0.5);
+    font-weight: 600;
+    color: #818cf8;
+    min-width: 20px;
+    text-align: center;
 }
 .project-image a {
     display: block;
@@ -989,11 +1003,95 @@ footer {
 .skills-image img {
     max-width: 100%;
     transition: transform 0.6s cubic-bezier(0.23, 1, 0.32, 1);
-    filter: drop-shadow(0 0 20px rgba(0, 120, 212, 0.2)); /* Original shadow from your file */
+    filter: drop-shadow(0 0 20px rgba(0, 120, 212, 0.2)); 
 }
 
 .skills-image:hover img {
     /* Tilts the image toward the user on hover */
     transform: rotateY(10deg) rotateX(5deg) scale(1.05);
     filter: drop-shadow(30px 30px 40px rgba(0, 0, 0, 0.6));
+}
+/* ================= TYPING ANIMATION (HERO) ================= */
+.typing-text {
+    display: inline-block;
+    color: var(--accent-blue);
+}
+
+.typing-cursor {
+    display: inline-block;
+    color: var(--accent-blue);
+    animation: blink 1s step-end infinite;
+    margin-left: 2px;
+    font-weight: 300;
+}
+
+@keyframes blink {
+    0%, 50% {
+        opacity: 1;
+    }
+    51%, 100% {
+        opacity: 0;
+    }
+}
+
+/* Hero fade-in animations */
+.hero-text {
+    animation: fadeInUp 0.8s ease forwards;
+}
+
+.hero-image {
+    animation: fadeInRight 0.8s ease 0.3s forwards;
+    opacity: 0;
+}
+
+@keyframes fadeInUp {
+    from {
+        opacity: 0;
+        transform: translateY(30px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+@keyframes fadeInRight {
+    from {
+        opacity: 0;
+        transform: translateX(30px);
+    }
+    to {
+        opacity: 1;
+        transform: translateX(0);
+    }
+}
+
+/* Smooth transition for typing text changes */
+.typing-text {
+    min-width: 280px;
+    text-align: left;
+}
+
+/* Make hero buttons pulse slightly on hover */
+.hero-buttons .btn {
+    position: relative;
+    overflow: hidden;
+}
+
+.hero-buttons .btn::before {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 0;
+    height: 0;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.1);
+    transform: translate(-50%, -50%);
+    transition: width 0.6s, height 0.6s;
+}
+
+.hero-buttons .btn:hover::before {
+    width: 300px;
+    height: 300px;
 }

@@ -26,7 +26,7 @@
     <section class="hero-section">
         <div class="container hero-layout">
             <div class="hero-text">
-                <h1>Cloud & DevOps | <br>Programming & Automation</h1>
+                <h1> <span class="typing-text">Cloud & DevOps</span></h1>
                 <p>Aspiring Cloud Engineer with a strong foundation in Azure infrastructure, Python automation, and CI/CD pipelines.</p>
                 <div class="hero-buttons">
                     <a href="#github-stats" class="btn btn-primary">View Projects</a>
@@ -229,24 +229,24 @@
             linuxTrigger.addEventListener('click', () => {
                 linuxClicks++;
                 
-                // Console log so you can test it's counting
+                
                 console.log(`Linux clicks: ${linuxClicks}`);
 
                 if (linuxClicks === 6) {
-                    // 1. Show the overlay
+                    
                     linuxEgg.style.display = 'flex';
                     
-                    // 2. Reset clicks so they can do it again
+                    
                     linuxClicks = 0;
 
-                    // 3. Hide it automatically after 5 seconds (optional)
+                    
                     setTimeout(() => {
                         linuxEgg.style.display = 'none';
                     }, 10000);
                 }
             });
 
-    // Allow clicking the overlay to close it immediately
+    
     linuxEgg.addEventListener('click', () => {
         linuxEgg.style.display = 'none';
     });
