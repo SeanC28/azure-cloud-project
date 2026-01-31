@@ -1,12 +1,12 @@
 /* --- Global Variables & Reset --- */
 :root {
-    --bg-main: #0a0e17;    
-    --bg-secondary: #131a2a;
-    --card-bg: #1a2235;      
+    --bg-main: #0a0e17;    /* Very dark blue/black background */
+    --bg-secondary: #131a2a; /* Slightly lighter for sections */
+    --card-bg: #1a2235;      /* Card background */
     --text-primary: #ffffff;
     --text-secondary: #aeb4c3;
-    --accent-blue: #0078d4;  
-    --glow-blue: #00a2ff;    
+    --accent-blue: #0078d4;  /* Main Azure blue */
+    --glow-blue: #00a2ff;    /* Brighter blue for glowing effects */
     --section-spacing: 80px;
 }
 
@@ -1094,4 +1094,256 @@ footer {
 .hero-buttons .btn:hover::before {
     width: 300px;
     height: 300px;
+}
+
+/* ================= SCROLL ANIMATIONS ================= */
+
+/* Base state for scroll-animated elements */
+.scroll-animate {
+    opacity: 0;
+    transform: translateY(50px);
+    transition: opacity 0.8s ease, transform 0.8s ease;
+}
+
+/* Revealed state */
+.scroll-animate.revealed {
+    opacity: 1;
+    transform: translateY(0);
+}
+
+/* Title animations - slide in from left */
+.scroll-animate-title {
+    opacity: 0;
+    transform: translateX(-50px);
+    transition: opacity 0.8s ease, transform 0.8s ease;
+}
+
+.scroll-animate-title.revealed {
+    opacity: 1;
+    transform: translateX(0);
+}
+
+/* Alternative animations for variety */
+.scroll-animate-fade {
+    opacity: 0;
+    transition: opacity 1s ease;
+}
+
+.scroll-animate-fade.revealed {
+    opacity: 1;
+}
+
+.scroll-animate-scale {
+    opacity: 0;
+    transform: scale(0.9);
+    transition: opacity 0.8s ease, transform 0.8s ease;
+}
+
+.scroll-animate-scale.revealed {
+    opacity: 1;
+    transform: scale(1);
+}
+
+/* Scroll progress bar */
+.scroll-progress {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    height: 3px;
+    background: linear-gradient(90deg, var(--accent-blue), var(--glow-blue));
+    width: 0%;
+    transition: width 0.1s ease;
+    box-shadow: 0 0 10px var(--glow-blue);
+    z-index: 101;
+}
+
+/* Enhanced animations for specific sections */
+
+/* Skills cards - pop in effect */
+.skill-card.scroll-animate {
+    opacity: 0;
+    transform: scale(0.8) translateY(30px);
+    transition: opacity 0.6s ease, transform 0.6s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+.skill-card.scroll-animate.revealed {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+}
+
+/* Project cards - slide from side */
+.project-card.scroll-animate {
+    opacity: 0;
+    transform: translateX(-50px);
+    transition: opacity 0.8s ease, transform 0.8s ease;
+}
+
+.project-card.scroll-animate.revealed {
+    opacity: 1;
+    transform: translateX(0);
+}
+
+/* Counter card - slide from opposite side */
+.counter-card.scroll-animate {
+    opacity: 0;
+    transform: translateX(50px);
+    transition: opacity 0.8s ease, transform 0.8s ease;
+}
+
+.counter-card.scroll-animate.revealed {
+    opacity: 1;
+    transform: translateX(0);
+}
+
+/* GitHub stats - fade and grow */
+.stat-card.scroll-animate {
+    opacity: 0;
+    transform: scale(0.9) rotateX(10deg);
+    transition: opacity 0.6s ease, transform 0.6s ease;
+}
+
+.stat-card.scroll-animate.revealed {
+    opacity: 1;
+    transform: scale(1) rotateX(0deg);
+}
+
+/* Repo items - staggered fade in */
+.repo-item.scroll-animate {
+    opacity: 0;
+    transform: translateX(-30px);
+    transition: opacity 0.6s ease, transform 0.6s ease;
+}
+
+.repo-item.scroll-animate.revealed {
+    opacity: 1;
+    transform: translateX(0);
+}
+
+/* Contact info cards - bounce in */
+.info-card.scroll-animate {
+    opacity: 0;
+    transform: translateY(40px) scale(0.95);
+    transition: opacity 0.7s ease, transform 0.7s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+}
+
+.info-card.scroll-animate.revealed {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+}
+
+/* Language bars - grow from left */
+.language-item {
+    opacity: 0;
+    transform: translateX(-20px);
+    transition: opacity 0.6s ease, transform 0.6s ease;
+}
+
+.languages-section.revealed .language-item {
+    opacity: 1;
+    transform: translateX(0);
+}
+
+/* Stagger language items */
+.languages-section.revealed .language-item:nth-child(1) { transition-delay: 0.1s; }
+.languages-section.revealed .language-item:nth-child(2) { transition-delay: 0.2s; }
+.languages-section.revealed .language-item:nth-child(3) { transition-delay: 0.3s; }
+.languages-section.revealed .language-item:nth-child(4) { transition-delay: 0.4s; }
+.languages-section.revealed .language-item:nth-child(5) { transition-delay: 0.5s; }
+
+/* About me section - fade in */
+.about-me.scroll-animate {
+    opacity: 0;
+    transform: translateY(30px);
+    transition: opacity 0.8s ease, transform 0.8s ease;
+}
+
+.about-me.scroll-animate.revealed {
+    opacity: 1;
+    transform: translateY(0);
+}
+
+/* Reduce motion for users who prefer it */
+@media (prefers-reduced-motion: reduce) {
+    .scroll-animate,
+    .scroll-animate-title,
+    .scroll-animate-fade,
+    .scroll-animate-scale,
+    .skill-card.scroll-animate,
+    .project-card.scroll-animate,
+    .counter-card.scroll-animate,
+    .stat-card.scroll-animate,
+    .repo-item.scroll-animate,
+    .info-card.scroll-animate,
+    .language-item,
+    .about-me.scroll-animate {
+        opacity: 1;
+        transform: none;
+        transition: none;
+    }
+    
+    .scroll-progress {
+        transition: none;
+    }
+}
+
+/* Parallax container for hero */
+.hero-image {
+    perspective: 1000px;
+    overflow: visible;
+}
+
+.hero-image img {
+    will-change: transform;
+    transition: transform 0.1s ease-out;
+}
+
+/* Number counter animation enhancement */
+.stat-card .number {
+    display: inline-block;
+    font-variant-numeric: tabular-nums;
+}
+
+/* Add a subtle pulse when counters animate */
+@keyframes counterPulse {
+    0%, 100% {
+        transform: scale(1);
+    }
+    50% {
+        transform: scale(1.05);
+    }
+}
+
+.stat-card .number.counting {
+    animation: counterPulse 0.5s ease-in-out;
+}
+
+/* Smooth scroll behavior */
+html {
+    scroll-behavior: smooth;
+}
+
+/* Enhanced scroll padding for anchor links */
+html {
+    scroll-padding-top: 100px;
+}
+
+/* Loading state animations */
+@keyframes shimmer {
+    0% {
+        background-position: -1000px 0;
+    }
+    100% {
+        background-position: 1000px 0;
+    }
+}
+
+.loading-shimmer {
+    background: linear-gradient(
+        90deg,
+        rgba(255, 255, 255, 0.05) 25%,
+        rgba(255, 255, 255, 0.1) 50%,
+        rgba(255, 255, 255, 0.05) 75%
+    );
+    background-size: 1000px 100%;
+    animation: shimmer 2s infinite;
 }
