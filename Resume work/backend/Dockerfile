@@ -14,20 +14,18 @@ RUN apt-get update && apt-get install -y \
 COPY requirements.txt .
 RUN pip install --target /home/site/wwwroot -r requirements.txt
 
-# Download TextBlob corpora
-RUN python -m textblob.download_corpora
-
 # Stage 2: Azure Functions runtime
 FROM mcr.microsoft.com/azure-functions/base:4.0
 
 ENV AzureWebJobsScriptRoot=/home/site/wwwroot \
-    AzureFunctionsJobHost__Logging__Console__IsEnabled=true
+    AzureFunctionsJobHost__Logging__Console__IsEnabled=true \
+    NLTK_DATA=/home/site/wwwroot/nltk_data
 
 # Copy installed dependencies from Stage 1
 COPY --from=build /home/site/wwwroot /home/site/wwwroot
 
-# Copy TextBlob corpora from Stage 1
-COPY --from=build /root/nltk_data /root/nltk_data
-
 # Copy function code
 COPY . /home/site/wwwroot
+
+# Download TextBlob corpora directly in runtime stage
+RUN pip install textblob nltk && python -m textblob.download_corpora -d /home/site/wwwroot/nltk_data
