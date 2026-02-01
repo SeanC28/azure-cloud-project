@@ -23,6 +23,19 @@ class SentimentAnalyzer:
         'security', 'breach', 'down', 'error', 'broken', 'not working',
         'interview', 'job offer', 'opportunity', 'hiring', 'deadline'
     ]
+
+    # Keyword-based fallback for sentiment
+    POSITIVE_WORDS = [
+        'great', 'excellent', 'amazing', 'wonderful', 'fantastic', 'love',
+        'perfect', 'awesome', 'brilliant', 'outstanding', 'thank', 'thanks',
+        'happy', 'good', 'nice', 'best', 'impressive', 'enjoy', 'enjoyed'
+    ]
+
+    NEGATIVE_WORDS = [
+        'bad', 'terrible', 'awful', 'horrible', 'hate', 'worst', 'broken',
+        'error', 'fail', 'failed', 'problem', 'issue', 'bug', 'wrong',
+        'disappointed', 'frustrating', 'angry', 'annoyed', 'useless'
+    ]
     
     @staticmethod
     def analyze(subject: str, message: str) -> Dict:
@@ -100,14 +113,20 @@ class SentimentAnalyzer:
     @staticmethod
     def _analyze_sentiment(text: str) -> Tuple[str, float]:
         """
-        Analyze sentiment using TextBlob NLP
+        Analyze sentiment using TextBlob NLP with keyword fallback.
+        TextBlob polarity works without corpora for basic detection,
+        but if it fails for any reason we fall back to keyword matching.
         
         Returns:
             (sentiment_label, polarity_score)
         """
-        blob = TextBlob(text)
-        polarity = blob.sentiment.polarity  # -1 (negative) to 1 (positive)
-        
+        try:
+            blob = TextBlob(text)
+            polarity = blob.sentiment.polarity  # -1 (negative) to 1 (positive)
+        except Exception:
+            # Fallback: keyword-based sentiment scoring
+            polarity = SentimentAnalyzer._keyword_sentiment(text)
+
         # Classify sentiment
         if polarity > 0.1:
             sentiment = 'positive'
@@ -117,6 +136,19 @@ class SentimentAnalyzer:
             sentiment = 'neutral'
         
         return sentiment, polarity
+
+    @staticmethod
+    def _keyword_sentiment(text: str) -> float:
+        """
+        Fallback sentiment scoring using keyword matching.
+        Returns polarity from -1 to 1.
+        """
+        pos_count = sum(1 for w in SentimentAnalyzer.POSITIVE_WORDS if w in text)
+        neg_count = sum(1 for w in SentimentAnalyzer.NEGATIVE_WORDS if w in text)
+        total = pos_count + neg_count
+        if total == 0:
+            return 0.0
+        return round((pos_count - neg_count) / total, 3)
     
     @staticmethod
     def _calculate_priority(text: str, sentiment_score: float, is_spam: bool) -> Tuple[str, int]:
