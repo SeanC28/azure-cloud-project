@@ -461,3 +461,142 @@ const statsSection = document.querySelector('.github-stats-section');
 if (statsSection) {
     statsObserver.observe(statsSection);
 }
+
+
+//===============================================
+// HERO PARTICLE FIELD
+// Canvas sits behind the hero image.  Particles
+// drift, pulse opacity on a sine wave, and wrap
+// at canvas edges.  The loop pauses automatically
+// when the hero scrolls out of view.
+//===============================================
+(function heroParticles() {
+    const heroImage = document.querySelector('.hero-image');
+    if (!heroImage) return;
+
+    // ── canvas setup ──────────────────────────────
+    const canvas = document.createElement('canvas');
+    canvas.className = 'hero-particles';
+    heroImage.insertBefore(canvas, heroImage.firstChild); // behind <img>
+    const ctx = canvas.getContext('2d');
+
+    // ── colour palette ────────────────────────────
+    // Matches the indigo system used across the site
+    const COLOURS = [
+        { r: 79,  g: 70,  b: 229 }, // indigo base
+        { r: 99,  g: 102, b: 241 }, // indigo mid
+        { r: 139, g: 92,  b: 246 }, // violet accent
+        { r: 0,   g: 162, b: 255 }, // glow-blue
+        { r: 165, g: 180, b: 252 }  // lavender highlight
+    ];
+
+    // ── particle class ────────────────────────────
+    class Particle {
+        constructor(w, h) { this.reset(w, h, true); }
+
+        reset(w, h, randomPos) {
+            this.x = randomPos ? Math.random() * w : (Math.random() < 0.5 ? -4 : w + 4);
+            this.y = randomPos ? Math.random() * h : Math.random() * h;
+
+            // size: mostly small, occasionally bigger
+            this.baseSize = Math.random() < 0.85 ? Math.random() * 2 + 0.5 : Math.random() * 3 + 2;
+
+            // slow random drift
+            const angle = Math.random() * Math.PI * 2;
+            const speed = Math.random() * 0.4 + 0.1;
+            this.vx = Math.cos(angle) * speed;
+            this.vy = Math.sin(angle) * speed;
+
+            // pick a colour
+            this.colour = COLOURS[Math.floor(Math.random() * COLOURS.length)];
+
+            // sine-wave opacity pulse: each particle gets its own phase & speed
+            this.pulsePhase = Math.random() * Math.PI * 2;
+            this.pulseSpeed = Math.random() * 0.8 + 0.4; // cycles per second (approx)
+            this.baseAlpha = Math.random() * 0.4 + 0.15; // 0.15 – 0.55
+        }
+
+        update(w, h, time) {
+            this.x += this.vx;
+            this.y += this.vy;
+
+            // wrap edges
+            if (this.x < -4)  this.x = w + 4;
+            if (this.x > w + 4) this.x = -4;
+            if (this.y < -4)  this.y = h + 4;
+            if (this.y > h + 4) this.y = -4;
+
+            // pulsed alpha
+            this.alpha = this.baseAlpha * (0.5 + 0.5 * Math.sin(time * this.pulseSpeed + this.pulsePhase));
+        }
+
+        draw(ctx) {
+            const c = this.colour;
+            ctx.beginPath();
+            ctx.arc(this.x, this.y, this.baseSize, 0, Math.PI * 2);
+            ctx.fillStyle = `rgba(${c.r},${c.g},${c.b},${this.alpha})`;
+            ctx.fill();
+        }
+    }
+
+    // ── state ─────────────────────────────────────
+    let particles = [];
+    let animId = null;
+    let lastTime = 0;
+
+    // ── sizing ────────────────────────────────────
+    function resize() {
+        const rect = heroImage.getBoundingClientRect();
+        canvas.width  = rect.width;
+        canvas.height = rect.height;
+        rebuildParticles();
+    }
+
+    function particleCount() {
+        // scale with area; ~1 particle per 4 800 px²; min 40, max 120
+        const area = canvas.width * canvas.height;
+        return Math.min(120, Math.max(40, Math.floor(area / 4800)));
+    }
+
+    function rebuildParticles() {
+        const count = particleCount();
+        particles = [];
+        for (let i = 0; i < count; i++) {
+            particles.push(new Particle(canvas.width, canvas.height));
+        }
+    }
+
+    // ── render loop ───────────────────────────────
+    function loop(timestamp) {
+        // pause if hero is scrolled away
+        const heroRect = heroImage.getBoundingClientRect();
+        if (heroRect.bottom < 0 || heroRect.top > window.innerHeight) {
+            animId = requestAnimationFrame(loop);
+            return;
+        }
+
+        const time = timestamp * 0.001; // seconds
+        const w = canvas.width;
+        const h = canvas.height;
+
+        ctx.clearRect(0, 0, w, h);
+
+        for (let i = 0; i < particles.length; i++) {
+            particles[i].update(w, h, time);
+            particles[i].draw(ctx);
+        }
+
+        animId = requestAnimationFrame(loop);
+    }
+
+    // ── init ──────────────────────────────────────
+    resize();
+    animId = requestAnimationFrame(loop);
+
+    // resize on window change (covers rotation too)
+    let resizeTimer = null;
+    window.addEventListener('resize', () => {
+        clearTimeout(resizeTimer);
+        resizeTimer = setTimeout(resize, 120);
+    });
+})();

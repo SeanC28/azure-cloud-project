@@ -1,11 +1,11 @@
-# Use Python 3.11 slim image (smaller, faster)
-FROM python:3.11-slim
+# DOCKERFILE
+FROM mcr.microsoft.com/azure-functions/python:4-3.11
 
 # Set environment variables
 ENV PYTHONUNBUFFERED=1 \
     PYTHONDONTWRITEBYTECODE=1
 
-# Set working directory (Azure Functions standard)
+# Set working directory (Azure Functions standard)S
 WORKDIR /home/site/wwwroot
 
 # Install system dependencies needed for building Python packages
@@ -33,8 +33,3 @@ COPY . .
 ENV AzureWebJobsScriptRoot=/home/site/wwwroot \
     AzureFunctionsJobHost__Logging__Console__IsEnabled=true
 
-# Expose port 80 (Azure Functions default)
-EXPOSE 80
-
-# Start Azure Functions host on port 80
-CMD ["func", "start", "--port", "80"]

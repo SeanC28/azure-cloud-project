@@ -49,32 +49,40 @@ ul {
 .btn {
     display: inline-block;
     padding: 12px 30px;
-    border-radius: 6px;
+    border-radius: 20px;
     font-weight: 600;
+    font-size: 0.95rem;
+    letter-spacing: 0.3px;
     transition: all 0.3s ease;
     cursor: pointer;
+    white-space: nowrap;
 }
 
 .btn-primary {
-    background-color: var(--accent-blue);
-    color: white;
-    border: 2px solid var(--accent-blue);
+    background: rgba(79, 70, 229, 0.15);
+    color: #a5b4fc;
+    border: 1px solid rgba(79, 70, 229, 0.3);
 }
 .btn-primary:hover {
-    background-color: var(--glow-blue);
-    border-color: var(--glow-blue);
-    box-shadow: 0 0 15px rgba(0, 120, 212, 0.5);
+    background: rgba(79, 70, 229, 0.28);
+    border-color: rgba(79, 70, 229, 0.55);
+    color: #fff;
+    box-shadow: 0 0 14px rgba(79, 70, 229, 0.35);
+    transform: translateY(-2px);
 }
 
 .btn-outline {
     background-color: transparent;
-    color: var(--text-primary);
-    border: 2px solid var(--accent-blue);
+    color: #a5b4fc;
+    border: 1px solid rgba(79, 70, 229, 0.3);
     margin-left: 16px;
 }
 .btn-outline:hover {
-    background-color: rgba(0, 120, 212, 0.1);
-    box-shadow: 0 0 10px rgba(0, 120, 212, 0.3);
+    background-color: rgba(79, 70, 229, 0.12);
+    border-color: rgba(79, 70, 229, 0.55);
+    color: #fff;
+    box-shadow: 0 0 14px rgba(79, 70, 229, 0.25);
+    transform: translateY(-2px);
 }
 
 
@@ -180,9 +188,22 @@ nav ul li a:hover {
     flex: 1;
     display: flex;
     justify-content: center;
+    position: relative;
+}
+
+/* Particle canvas — fills the container, sits behind the image */
+.hero-particles {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    z-index: 0;
+    pointer-events: none;
 }
 
 .hero-image img {
+    position: relative;
+    z-index: 1;
     max-width: 100%;
     height: auto;
     filter: drop-shadow(0 0 20px rgba(0, 120, 212, 0.3));
@@ -793,19 +814,24 @@ footer {
     top: 50%;
     left: 50%;
     transform: translate(-50%, -50%);
-    background: rgba(0, 120, 212, 0.95);
-    color: white;
-    padding: 12px 24px;
-    border-radius: 8px;
+    background: rgba(79, 70, 229, 0.85);
+    backdrop-filter: blur(8px);
+    color: #a5b4fc;
+    padding: 10px 22px;
+    border-radius: 20px;
+    border: 1px solid rgba(79, 70, 229, 0.4);
     font-weight: 600;
+    font-size: 0.9rem;
+    letter-spacing: 0.3px;
     opacity: 0;
-    transition: opacity 0.3s ease;
+    transition: opacity 0.3s ease, transform 0.3s ease;
     pointer-events: none;
     white-space: nowrap;
 }
 
 .project-image a:hover::after {
     opacity: 1;
+    transform: translate(-50%, -50%) translateY(-2px);
 }
 
 .project-image a:hover img {
