@@ -16,8 +16,15 @@ COPY requirements.txt .
 # Install all packages into the wwwroot directory
 RUN pip install --target /home/site/wwwroot -r requirements.txt
 
-# Download TextBlob corpora into a known location inside wwwroot
-RUN NLTK_DATA=/home/site/wwwroot/nltk_data python -c "import textblob; textblob.download_corpora(download_dir='/home/site/wwwroot/nltk_data')"
+# Download NLTK data that TextBlob needs, using nltk directly
+RUN PYTHONPATH=/home/site/wwwroot python -c " \
+import nltk; \
+nltk.download('punkt', download_dir='/home/site/wwwroot/nltk_data'); \
+nltk.download('punkt_tab', download_dir='/home/site/wwwroot/nltk_data'); \
+nltk.download('averaged_perceptron_tagger', download_dir='/home/site/wwwroot/nltk_data'); \
+nltk.download('averaged_perceptron_tagger_eng', download_dir='/home/site/wwwroot/nltk_data'); \
+nltk.download('movie_reviews', download_dir='/home/site/wwwroot/nltk_data'); \
+nltk.download('stopwords', download_dir='/home/site/wwwroot/nltk_data')"
 
 # Stage 2: Azure Functions runtime
 FROM mcr.microsoft.com/azure-functions/base:4.0
@@ -30,5 +37,5 @@ ENV AzureWebJobsScriptRoot=/home/site/wwwroot \
 # Copy everything from Stage 1 (deps + corpora all inside wwwroot)
 COPY --from=build /home/site/wwwroot /home/site/wwwroot
 
-# Copy function code (overwrites only the source files, keeps deps intact)
+# Copy function code
 COPY . /home/site/wwwroot
