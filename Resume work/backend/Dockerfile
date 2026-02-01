@@ -1,35 +1,33 @@
 # DOCKERFILE
-FROM mcr.microsoft.com/azure-functions/python:4-3.11
 
-# Set environment variables
-ENV PYTHONUNBUFFERED=1 \
-    PYTHONDONTWRITEBYTECODE=1
+# Stage 1: Install Python dependencies
+FROM python:3.11-slim AS build
 
-# Set working directory (Azure Functions standard)S
 WORKDIR /home/site/wwwroot
 
-# Install system dependencies needed for building Python packages
+# Install system dependencies for building packages
 RUN apt-get update && apt-get install -y \
     gcc \
     g++ \
     && rm -rf /var/lib/apt/lists/*
 
-# Copy requirements first (Docker layer caching optimization)
 COPY requirements.txt .
+RUN pip install --target /home/site/wwwroot -r requirements.txt
 
-# Install Python dependencies
-RUN pip install --no-cache-dir -r requirements.txt
-
-# Install Azure Functions Core Tools
-RUN pip install azure-functions-core-tools
-
-# Download TextBlob corpora (needed for sentiment analysis)
+# Download TextBlob corpora
 RUN python -m textblob.download_corpora
 
-# Copy all function code
-COPY . .
+# Stage 2: Azure Functions runtime
+FROM mcr.microsoft.com/azure-functions/base:4.0
 
-# Azure Functions specific environment variables
 ENV AzureWebJobsScriptRoot=/home/site/wwwroot \
     AzureFunctionsJobHost__Logging__Console__IsEnabled=true
 
+# Copy installed dependencies from Stage 1
+COPY --from=build /home/site/wwwroot /home/site/wwwroot
+
+# Copy TextBlob corpora from Stage 1
+COPY --from=build /root/nltk_data /root/nltk_data
+
+# Copy function code
+COPY . /home/site/wwwroot
