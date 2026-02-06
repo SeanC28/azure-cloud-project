@@ -4,7 +4,8 @@
 FROM mcr.microsoft.com/azure-functions/python:4.37.1-python3.11
 
 ENV AzureWebJobsScriptRoot=/home/site/wwwroot \
-    AzureFunctionsJobHost__Logging__Console__IsEnabled=true
+    AzureFunctionsJobHost__Logging__Console__IsEnabled=true \
+    FUNCTIONS_WORKER_RUNTIME=python
 
 WORKDIR /home/site/wwwroot
 
