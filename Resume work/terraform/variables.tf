@@ -44,24 +44,6 @@ variable "location" {
   type        = string
 }
 
-# Application Settings
-variable "github_username" {
-  description = "GitHub username for stats"
-  type        = string
-  default     = "SeanC28"
-}
-
-variable "contact_email" {
-  description = "Email address to receive contact form submissions"
-  type        = string
-  default     = "seanconnell23@yahoo.com"
-}
-
-variable "resend_api_key" {
-  description = "Resend API key for email notifications"
-  type        = string
-  sensitive   = true
-}
 
 # Tags
 variable "tags" {
