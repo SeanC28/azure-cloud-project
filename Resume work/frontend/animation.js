@@ -76,7 +76,7 @@ document.addEventListener('DOMContentLoaded', () => {
     
     // Add fade-in animation for hero elements
     const heroText = document.querySelector('.hero-text');
-    const heroImage = document.querySelector('.hero-image');
+    const heroImageElement = document.querySelector('.hero-image img');
     
     if (heroText) {
         heroText.style.opacity = '0';
@@ -89,14 +89,13 @@ document.addEventListener('DOMContentLoaded', () => {
         }, 100);
     }
     
-    if (heroImage) {
-        heroImage.style.opacity = '0';
-        heroImage.style.transform = 'translateX(30px)';
+    // Animate ONLY the img, not the container (so particles stay visible)
+    if (heroImageElement) {
+        heroImageElement.style.opacity = '0';
         
         setTimeout(() => {
-            heroImage.style.transition = 'opacity 0.8s ease, transform 0.8s ease';
-            heroImage.style.opacity = '1';
-            heroImage.style.transform = 'translateX(0)';
+            heroImageElement.style.transition = 'opacity 0.8s ease';
+            heroImageElement.style.opacity = '1';
         }, 300);
     }
 });
@@ -546,6 +545,7 @@ if (statsSection) {
 
     // ── sizing ────────────────────────────────────
     function resize() {
+        // Make canvas fill the entire container, not just the image size
         const rect = heroImage.getBoundingClientRect();
         canvas.width  = rect.width;
         canvas.height = rect.height;

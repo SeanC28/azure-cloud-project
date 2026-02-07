@@ -16,6 +16,7 @@
                 <ul>
                     <li><a href="#github-stats">Projects</a></li>
                     <li><a href="#skills">Skills</a></li>
+                    <li><a href="#architecture">Architecture</a></li>
                     <li><a href="#contact-form">Contact</a></li>
                 </ul>
                 <a href="#" class="btn btn-primary">Project Showcase</a>
@@ -49,27 +50,27 @@
                 <div class="skills-content">
                     <div class="skills-grid">
                         <div class="skill-card glow-box">
-                            <div class="skill-icon">🤖</div>
+                            <img class="skill-icon-img" src="https://cdn.jsdelivr.net/gh/devicons/devicon@latest/icons/azure/azure-original.svg" alt="Azure">
                             <span>Azure</span>
                         </div>
                         <div class="skill-card glow-box">
-                            <div class="skill-icon">🐍</div>
+                            <img class="skill-icon-img" src="https://cdn.jsdelivr.net/gh/devicons/devicon@latest/icons/python/python-original.svg" alt="Python">
                             <span>Python</span>
                         </div>
                         <div class="skill-card glow-box">
-                            <div class="skill-icon">🪐</div>
+                            <img class="skill-icon-img" src="https://cdn.jsdelivr.net/gh/devicons/devicon@latest/icons/cosmosdb/cosmosdb-original.svg" alt="Cosmos DB">
                             <span>Cosmos DB</span>
                         </div>
                         <div class="skill-card glow-box">
-                            <div class="skill-icon">⚙️</div>
+                            <img class="skill-icon-img" src="https://cdn.jsdelivr.net/gh/devicons/devicon@latest/icons/githubactions/githubactions-original.svg" alt="GitHub Actions">
                             <span>GitHub Actions</span>
                         </div>
                         <div class="skill-card glow-box">
-                            <div class="skill-icon">🐳</div>
-                            <span>Docker</span>
+                            <img class="skill-icon-img" src="https://cdn.jsdelivr.net/gh/devicons/devicon@latest/icons/terraform/terraform-original.svg" alt="Terraform">
+                            <span>Terraform</span>
                         </div>
                         <div class="skill-card glow-box" id="linux-trigger" style="cursor: pointer; user-select: none;">
-                            <div class="skill-icon">🐧</div>
+                            <img class="skill-icon-img" src="https://cdn.jsdelivr.net/gh/devicons/devicon@latest/icons/linux/linux-original.svg" alt="Linux">
                             <span>Linux</span>
                         </div>
                     </div>
@@ -115,6 +116,22 @@
         </div>
     </div>
 </section>
+
+    <!-- ================= ARCHITECTURE DIAGRAM ================= -->
+    <section class="architecture-section" id="architecture">
+        <div class="container">
+            <h2 class="section-title">Under the Hood</h2>
+            <p class="architecture-subtitle">The cloud infrastructure powering this site — click any node to inspect</p>
+            <div class="architecture-diagram" id="arch-diagram">
+                <canvas id="arch-canvas"></canvas>
+                <div id="arch-nodes"></div>
+            </div>
+            <div class="arch-legend" id="arch-legend"></div>
+            <div class="arch-detail-panel" id="arch-detail">
+                <div class="arch-detail-empty">Select a component to see details</div>
+            </div>
+        </div>
+    </section>
 
     <section class="github-stats-section" id="github-stats">
         <h2>GitHub Activity</h2>
@@ -256,6 +273,7 @@
     <script src="github-stats.js"></script>
     <script src="resume-tracker.js"></script>
     <script src="contact-form.js"></script>
+    <script src="architecture-diagram.js"></script>
     <script src="animation.js"></script>
     <script>
     window.addEventListener('DOMContentLoaded', () => {

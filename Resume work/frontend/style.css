@@ -189,24 +189,32 @@ nav ul li a:hover {
     display: flex;
     justify-content: center;
     position: relative;
+    overflow: visible; /* Allow particles to extend beyond container */
 }
 
-/* Particle canvas — fills the container, sits behind the image */
+/* Particle canvas — extends beyond the image to show particles around edges */
 .hero-particles {
     position: absolute;
-    inset: 0;
-    width: 100%;
-    height: 100%;
-    z-index: 0;
+    inset: -60px; /* Extend 60px beyond all edges */
+    width: calc(100% + 120px); /* Add back the extended space */
+    height: calc(100% + 120px);
+    z-index: 0 !important;
     pointer-events: none;
 }
 
 .hero-image img {
     position: relative;
-    z-index: 1;
+    z-index: 1 !important;
     max-width: 100%;
     height: auto;
     filter: drop-shadow(0 0 20px rgba(0, 120, 212, 0.3));
+    
+    /* Fade-in animation handled by JavaScript in animation.js */
+    /* Removed CSS animation to avoid conflicts */
+    
+    /* Parallax transform support */
+    will-change: transform;
+    transition: transform 0.1s ease-out;
 }
 
 /* ================= SKILLS & EXPERIENCE SECTION ================= */
@@ -261,6 +269,13 @@ nav ul li a:hover {
     font-size: 2.5rem;
     margin-bottom: 10px;
     color: var(--accent-blue);
+}
+
+.skill-icon-img {
+    width: 48px;
+    height: 48px;
+    margin-bottom: 10px;
+    object-fit: contain;
 }
 
 .skill-card span {
@@ -1065,11 +1080,6 @@ footer {
     animation: fadeInUp 0.8s ease forwards;
 }
 
-.hero-image {
-    animation: fadeInRight 0.8s ease 0.3s forwards;
-    opacity: 0;
-}
-
 @keyframes fadeInUp {
     from {
         opacity: 0;
@@ -1318,11 +1328,6 @@ footer {
     overflow: visible;
 }
 
-.hero-image img {
-    will-change: transform;
-    transition: transform 0.1s ease-out;
-}
-
 /* Number counter animation enhancement */
 .stat-card .number {
     display: inline-block;
@@ -1372,4 +1377,339 @@ html {
     );
     background-size: 1000px 100%;
     animation: shimmer 2s infinite;
+}
+
+/* ================= ARCHITECTURE DIAGRAM SECTION ================= */
+.architecture-section {
+    padding: var(--section-spacing) 0;
+    background-color: var(--bg-secondary);
+}
+
+.architecture-subtitle {
+    text-align: center;
+    color: var(--text-secondary);
+    font-size: 1.1rem;
+    margin-top: -40px;
+    margin-bottom: 40px;
+}
+
+/* Diagram container */
+.architecture-diagram {
+    position: relative;
+    width: 100%;
+    height: 520px;
+    background: var(--bg-main);
+    border-radius: 12px;
+    border: 1px solid rgba(0, 120, 212, 0.15);
+    overflow: hidden;
+    /* dot grid background */
+    background-image: radial-gradient(circle, rgba(255,255,255,0.04) 1px, transparent 1px);
+    background-size: 24px 24px;
+}
+
+#arch-canvas {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    pointer-events: none;
+    z-index: 1;
+}
+
+/* Clickable canvas overlay for deselect */
+.architecture-diagram::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    z-index: 0;
+}
+
+#arch-nodes {
+    position: absolute;
+    inset: 0;
+    z-index: 2;
+    pointer-events: none;
+}
+
+/* ── Individual node ── */
+.arch-node {
+    position: absolute;
+    transform: translate(-50%, -50%);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 6px;
+    cursor: pointer;
+    pointer-events: auto;
+    transition: opacity 0.35s ease, transform 0.35s ease;
+    z-index: 3;
+}
+
+.arch-node:hover {
+    transform: translate(-50%, -50%) scale(1.08);
+}
+
+.arch-node-ring {
+    width: 54px;
+    height: 54px;
+    border-radius: 50%;
+    background: var(--bg-main);
+    border: 1.5px solid var(--node-color);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.3s ease;
+    box-shadow: 0 0 12px rgba(0,0,0,0.3);
+    position: relative;
+}
+
+/* Ambient glow behind ring */
+.arch-node-ring::before {
+    content: '';
+    position: absolute;
+    inset: -10px;
+    border-radius: 50%;
+    background: radial-gradient(circle, color-mix(in srgb, var(--node-color) 12%, transparent) 0%, transparent 70%);
+    z-index: -1;
+    transition: inset 0.3s ease;
+}
+
+.arch-node:hover .arch-node-ring::before {
+    inset: -16px;
+}
+
+.arch-node-icon {
+    font-size: 1.3rem;
+    line-height: 1;
+}
+
+.arch-lambda {
+    font-family: 'Segoe UI', monospace;
+    font-weight: 700;
+    font-size: 1.4rem;
+    color: var(--accent-blue);
+}
+
+.arch-node-label {
+    font-size: 0.7rem;
+    color: var(--text-secondary);
+    font-weight: 500;
+    white-space: nowrap;
+    transition: color 0.3s ease;
+    text-shadow: 0 1px 4px rgba(0,0,0,0.7);
+}
+
+/* Selected state */
+.arch-node--selected .arch-node-ring {
+    border-width: 2.5px;
+    box-shadow: 0 0 20px color-mix(in srgb, var(--node-color) 40%, transparent);
+}
+
+.arch-node--selected .arch-node-label {
+    color: var(--text-primary);
+    font-weight: 600;
+}
+
+/* Dimmed state */
+.arch-node--dimmed {
+    opacity: 0.2;
+}
+
+/* ── Legend ── */
+.arch-legend {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 16px 24px;
+    margin-top: 20px;
+}
+
+.arch-legend-item {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 0.8rem;
+    color: var(--text-secondary);
+}
+
+.arch-legend-dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    display: inline-block;
+}
+
+/* ── Detail panel ── */
+.arch-detail-panel {
+    margin-top: 20px;
+    min-height: 120px;
+}
+
+.arch-detail-empty {
+    text-align: center;
+    padding: 40px 20px;
+    color: #475569;
+    font-size: 0.9rem;
+}
+
+.arch-detail-card {
+    background: var(--bg-main);
+    border: 1px solid color-mix(in srgb, var(--detail-color) 25%, transparent);
+    border-radius: 12px;
+    padding: 24px;
+    animation: archFadeIn 0.25s ease;
+}
+
+@keyframes archFadeIn {
+    from { opacity: 0; transform: translateY(6px); }
+    to   { opacity: 1; transform: translateY(0); }
+}
+
+.arch-detail-header {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    margin-bottom: 12px;
+}
+
+.arch-detail-icon {
+    font-size: 1.6rem;
+}
+
+.arch-detail-title {
+    margin: 0;
+    font-size: 1.1rem;
+    font-weight: 600;
+}
+
+.arch-detail-tech {
+    margin: 2px 0 0;
+    font-size: 0.78rem;
+    color: #64748b;
+}
+
+.arch-detail-desc {
+    margin: 0;
+    font-size: 0.9rem;
+    color: var(--text-secondary);
+    line-height: 1.65;
+}
+
+/* Endpoint rows */
+.arch-endpoints {
+    margin-top: 16px;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+.arch-ep {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-size: 0.82rem;
+    padding: 6px 12px;
+    background: rgba(0, 120, 212, 0.05);
+    border-radius: 6px;
+    border: 1px solid rgba(0, 120, 212, 0.12);
+}
+
+.arch-ep-method {
+    font-weight: 700;
+    font-size: 0.72rem;
+    width: 36px;
+    text-align: center;
+}
+
+.arch-ep-method--get  { color: #10b981; }
+.arch-ep-method--post { color: #f59e0b; }
+
+.arch-ep-path {
+    color: var(--text-secondary);
+    flex: 1;
+    font-family: 'Segoe UI', monospace;
+}
+
+.arch-ep-status {
+    font-size: 0.85rem;
+}
+
+/* Container chips */
+.arch-chips {
+    margin-top: 16px;
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+}
+
+.arch-chip {
+    font-size: 0.78rem;
+    color: var(--chip-color);
+    background: color-mix(in srgb, var(--chip-color) 8%, transparent);
+    border: 1px solid color-mix(in srgb, var(--chip-color) 15%, transparent);
+    padding: 4px 12px;
+    border-radius: 6px;
+}
+
+/* ── Scroll animation integration ── */
+.architecture-diagram.scroll-animate {
+    opacity: 0;
+    transform: scale(0.96);
+    transition: opacity 0.8s ease, transform 0.8s ease;
+}
+
+.architecture-diagram.scroll-animate.revealed {
+    opacity: 1;
+    transform: scale(1);
+}
+
+/* ── Responsive ── */
+@media (max-width: 768px) {
+    .architecture-diagram {
+        height: 440px;
+    }
+
+    .arch-node-ring {
+        width: 44px;
+        height: 44px;
+    }
+
+    .arch-node-icon {
+        font-size: 1.05rem;
+    }
+
+    .arch-node-label {
+        font-size: 0.6rem;
+    }
+
+    .arch-detail-card {
+        padding: 18px;
+    }
+
+    .arch-ep {
+        font-size: 0.75rem;
+    }
+}
+
+@media (max-width: 480px) {
+    .architecture-diagram {
+        height: 380px;
+    }
+
+    .arch-node-ring {
+        width: 38px;
+        height: 38px;
+    }
+
+    .arch-node-label {
+        font-size: 0.55rem;
+    }
+
+    .arch-legend {
+        gap: 8px 14px;
+    }
+
+    .arch-legend-item {
+        font-size: 0.7rem;
+    }
 }
